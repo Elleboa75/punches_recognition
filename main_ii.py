@@ -3,6 +3,7 @@ import torch
 from punches_lib import datasets
 from punches_lib.ii_loss import ii_loss, models, train
 from punches_lib.cnn import eval
+from punches_lib.radam import RAdam
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -41,7 +42,7 @@ def main():
 
     ii_loss_fn = ii_loss.IILoss()
     ce_loss_fn = torch.nn.CrossEntropyLoss()
-    optimizer = torch.optim.RAdam(net.parameters(), lr=args.lr)
+    optimizer = RAdam(net.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_decay_epochs, gamma=args.lr_decay_gamma)
 
     train.train_model(net, trainloader, ii_loss_fn, ce_loss_fn, args.epochs, optimizer, scheduler, args.device)
