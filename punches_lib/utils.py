@@ -31,7 +31,7 @@ class AverageMeter(object):
 
 def accuracy(nn_output:torch.Tensor, ground_truth:torch.Tensor, k: int=1) -> float:
     '''
-    Return accuracy@k for the given model output and ground truth
+    Get accuracy@k for the given model output and ground truth
 
     Parameters
     ----------
@@ -51,3 +51,22 @@ def accuracy(nn_output:torch.Tensor, ground_truth:torch.Tensor, k: int=1) -> flo
     # now getting the accuracy is easy, we just operate the sum of the tensor and divide it by the number of examples
     acc = correct_items.sum().item() / nn_output.shape[0]
     return acc
+
+def bucket_mean(embeddings:torch.Tensor, labels:torch.Tensor, num_classes:int) -> torch.Tensor:
+    '''
+    A helper function to calculate the mean of the embeddings separately for each category.
+
+    Parameters
+    ----------
+    embeddings: a tensor of shape (num_datapoints x embedding_dim)
+    labels: a tensor of longs or ints of shape (num_datapoints)
+    num_classes: the number of categories
+
+    Returns
+    -------
+    a tensor of shape (num_classes x embedding_dim).
+    '''
+    device = embeddings.device
+    tot = torch.zeros(num_classes, embeddings.shape[1], device=device).index_add(0, labels, embeddings)
+    count = torch.zeros(num_classes, embeddings.shape[1], device=device).index_add(0, labels, torch.ones_like(embeddings))
+    return tot/count

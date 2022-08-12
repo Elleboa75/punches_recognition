@@ -2,8 +2,8 @@ from webbrowser import get
 import torch
 import argparse
 
-from punches_lib import models, datasets
-from punches_lib.cnn import train, eval
+from punches_lib import datasets
+from punches_lib.cnn import models, train, eval
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -15,7 +15,7 @@ def get_args():
     parser.add_argument("--root_train", type=str, default="data/train", help="root of training data (default: data/train).")
     parser.add_argument("--root_test", type=str, default="data/test", help="root of testing data (default: data/test).")
     parser.add_argument("--model_path", type=str, default="model/model.pth", help="path to save model (default: model/model.pth).")
-    parser.add_argument("--use_pretrained", action="store_true", default=False, help="use pretrained model (default: False).")
+    parser.add_argument("--use_pretrained", action="store_true", default=False, help="use ImageNet-pretrained model (default: False).")
     parser.add_argument("--model_class", type=str, default="resnet18", choices=["resnet18", "resnet34", "resnet50"],help="model class (default: resnet18).")
     parser.add_argument("--device", type=str, default=None, help="device to use (default: None -> use CUDA if available).")
     return parser.parse_args()
@@ -34,7 +34,9 @@ def main():
     torch.save(net.state_dict(), args.model_path)
     print(f"Model saved to {args.model_path}")
 
-    testloader = datasets.get_dataloader(args.root_test, args.batch_size, args.num_workers, transforms=datasets.get_bare_transforms())
+    testloader = datasets.get_dataloader(args.root_test, args.batch_size, args.num_workers, transforms=datasets.get_bare_transforms(), shuffle=False)
     eval.evaluate_model(net, testloader, loss_fn=loss_fn, device=None)
 
+if __name__ == "__main__":
+    main()
 
