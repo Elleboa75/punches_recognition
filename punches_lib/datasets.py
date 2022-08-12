@@ -15,7 +15,7 @@ def get_bare_transforms(size:int=256):
     A pipeline of torchvision transforms.
     '''
     return torchvision.transforms.Compose([
-        torchvision.transforms.Resize(size),
+        torchvision.transforms.Resize((size, size)),
         torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
     ])
