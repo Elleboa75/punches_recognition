@@ -7,7 +7,14 @@ class IILoss(torch.nn.Module):
     Intra_spread is sum of the squared distances between each data point and its class mean.
     Inter_separation is the minimum of the squared distances between each class mean and the mean of the other classes.
     The loss is defined as intra_spread - inter_separation.
+
+    Attributes
+    ----------
+    delta: a float representing the maximum inter_separation between classes. It is used to prevent the inter_separation term from dominating the intra_spread term and other losses such as cross-entropy.
     '''
+    def __init__(self, delta:float=float("inf")):
+        self.delta = delta
+
     def forward(self, embeddings:torch.Tensor, labels:torch.Tensor, num_classes:int) -> torch.Tensor:
         '''
         Compute the loss for the given embeddings and labels.
@@ -44,7 +51,7 @@ class IILoss(torch.nn.Module):
                 norm_from_previous_means = (class_mean_previous - class_mean[j]).norm(dim=1)**2
                 inter_separation = min(inter_separation, norm_from_previous_means.min())
         
-        return intra_spread/n_datapoints - inter_separation
+        return intra_spread/n_datapoints - min(self.delta, inter_separation)
 
 def outlier_score(embeddings:torch.Tensor, train_class_means:torch.Tensor):
     '''

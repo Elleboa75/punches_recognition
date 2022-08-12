@@ -15,6 +15,7 @@ def get_args():
     parser.add_argument("--lr_decay_gamma", type=float, default=0.1, help="learning rate decay factor (default: 0.1).")
     parser.add_argument("--lr_decay_epochs", type=int, nargs="*", default=[10, 15], help="learning rate decay epochs (default: 10 and 15).")
     parser.add_argument("--lambda_ii", type=float, default=1, help="weight of the II-loss (default: 1).")
+    parser.add_argument("--delta_ii", type=float, default=float("inf"), help="delta (margin) for the II-loss. If infinite, the II-loss is unbounded (default: infinite).")
     parser.add_argument("--root_train", type=str, default="data/train", help="root of training data (default: data/train).")
     parser.add_argument("--root_test", type=str, default="data/test", help="root of testing data (default: data/test).")
     parser.add_argument("--root_openset", type=str, default="data/openset", help="root of ood data (default: data/openset).")
@@ -77,8 +78,8 @@ def main():
     outlier_scores_extra = eval_ii.eval_outlier_scores(extraloader, net, train_data_means, device=args.device)
     torch.save(outlier_scores_extra, "outliers_score_ood.pth")
 
-    plt.hist(outlier_scores_test.detach().cpu().numpy(), bins=100, alpha=.5, label="test")
-    plt.hist(outlier_scores_extra.detach().cpu().numpy(), bins=100, alpha=.5, label="extra")
+    plt.hist(outlier_scores_test.detach().cpu().numpy(), bins=100, alpha=.5, density=True, label="test")
+    plt.hist(outlier_scores_extra.detach().cpu().numpy(), bins=100, alpha=.5, density=True, label="extra")
     plt.legend(loc="upper right")
     plt.savefig("outlier_scores.png")
 
