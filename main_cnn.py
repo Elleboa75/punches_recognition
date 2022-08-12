@@ -22,7 +22,7 @@ def get_args():
 
 def main():
     args = get_args()
-    trainloader = datasets.get_dataloader(args.root_train, args.batch_size, args.num_workers, transforms=datasets.get_bare_transforms())
+    trainloader = datasets.get_dataloader(args.root_train, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms())
     num_classes = len(trainloader.dataset.classes)
     net = models.get_model(args.model_class, args.use_pretrained, num_classes=num_classes)
 
@@ -34,7 +34,7 @@ def main():
     torch.save(net.state_dict(), args.model_path)
     print(f"Model saved to {args.model_path}")
 
-    testloader = datasets.get_dataloader(args.root_test, args.batch_size, args.num_workers, transforms=datasets.get_bare_transforms(), shuffle=False)
+    testloader = datasets.get_dataloader(args.root_test, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms(), shuffle=False)
     eval.evaluate_model(net, testloader, loss_fn=loss_fn, device=None)
 
 if __name__ == "__main__":

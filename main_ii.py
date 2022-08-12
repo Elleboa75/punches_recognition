@@ -49,7 +49,7 @@ def main():
     torch.save(net.state_dict(), args.model_path)
     print(f"Model saved to {args.model_path}")
 
-    testloader = datasets.get_dataloader(args.root_test, args.batch_size, args.num_workers, transforms=datasets.get_bare_transforms(), shuffle=False)
+    testloader = datasets.get_dataloader(args.root_test, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms(), shuffle=False)
     # for now, test only on accuracy
     eval.test_model(net, testloader, args.device)
 
