@@ -64,7 +64,7 @@ def main():
     print("Evaluating accuracy on testset")
     testloader = datasets.get_dataloader(args.root_test, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms(), shuffle=False)
     # for now, test only on accuracy
-    eval.test_model(net, testloader, args.device)
+    eval.test_model(net, testloader, loss_fn=None, device=args.device))
 
     print("Getting outlier scores for testset")
     outlier_scores_test = eval_ii.eval_outlier_scores(testloader, net, train_data_means, device=args.device)
