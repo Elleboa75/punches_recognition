@@ -16,6 +16,7 @@ def get_mean_embeddings(dataloader:torch.utils.data.DataLoader, model:torch.nn.M
             embeddings, _ = model(X)
             full_embeddings.append(embeddings)
     full_embeddings = torch.cat(full_embeddings)
+    print("embeddings shapes", full_embeddings.shape, "means", full_embeddings.mean(0).shape)
     return full_embeddings.mean(0)
 
 def eval_outlier_scores(dataloader:torch.utils.data.DataLoader, model:torch.nn.Module, traindata_means:torch.Tensor, device:torch.device) -> torch.Tensor:
