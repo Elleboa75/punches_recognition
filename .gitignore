@@ -5,6 +5,9 @@ models/
 # Vscode stuff
 .vscode
 
+# private stuff
+cloud_resources/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

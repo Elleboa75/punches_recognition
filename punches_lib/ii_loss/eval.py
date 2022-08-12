@@ -10,7 +10,7 @@ def get_mean_embeddings(dataloader:torch.utils.data.DataLoader, model:torch.nn.M
     model.eval()
     with torch.no_grad():
         full_embeddings = []
-        for i, (X, y) in tqdm(dataloader):
+        for i, (X, y) in enumerate(tqdm(dataloader)):
             X = X.to(device)
             y = y.to(device)
             embeddings, _ = model(X)
@@ -26,7 +26,7 @@ def eval_outlier_scores(dataloader:torch.utils.data.DataLoader, model:torch.nn.M
     model.eval()
     with torch.no_grad():
         outlier_scores = torch.zeros(len(dataloader.dataset))
-        for i, (X, y) in enumerate(dataloader):
+        for i, (X, y) in enumerate(tqdm(dataloader)):
             X = X.to(device)
             y = y.to(device)
             embeddings, y_hat = model(X)

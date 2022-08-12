@@ -52,17 +52,23 @@ def main():
     torch.save(net.state_dict(), args.model_path)
     print(f"Model saved to {args.model_path}")
 
+    print("Getting trainset means")
     train_data_means = eval_ii.get_mean_embeddings(trainloader, net, device=args.device)
 
+    print("Evaluating accuracy on testset")
     testloader = datasets.get_dataloader(args.root_test, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms(), shuffle=False)
     # for now, test only on accuracy
     eval.test_model(net, testloader, args.device)
 
+    print("Getting outlier scores for testset")
     outlier_scores_test = eval_ii.eval_outlier_scores(testloader, net, train_data_means, device=args.device)
+    torch.save(outlier_scores_test, "outliers_score_test.pth")
 
     extraloader = datasets.get_dataloader(args.root_openset, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms(), shuffle=False)
 
+    print("Getting outlier scores for ood set")
     outlier_scores_extra = eval_ii.eval_outlier_scores(extraloader, net, train_data_means, device=args.device)
+    torch.save(outlier_scores_extra, "outliers_score_ood.pth")
 
     plt.hist(outlier_scores_test.detach().cpu().numpy(), bins=100, alpha=.5, label="test")
     plt.hist(outlier_scores_extra.detach().cpu().numpy(), bins=100, alpha=.5, label="extra")
