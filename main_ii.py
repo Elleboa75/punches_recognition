@@ -51,7 +51,7 @@ def main():
             net.load_state_dict(pretrained_params, strict=False)
 
 
-        ii_loss_fn = ii_loss.IILoss()
+        ii_loss_fn = ii_loss.IILoss(delta=args.delta_ii)
         ce_loss_fn = torch.nn.CrossEntropyLoss()
         optimizer = RAdam(net.parameters(), lr=args.lr)
         scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_decay_epochs, gamma=args.lr_decay_gamma)
