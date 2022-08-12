@@ -70,18 +70,18 @@ def main():
 
     print("Getting outlier scores for testset")
     outlier_scores_test = eval_ii.eval_outlier_scores(testloader, net, train_data_means, device=args.device)
-    torch.save(outlier_scores_test, "outliers_score_test.pth")
+    torch.save(outlier_scores_test, f"{args.model_path}_outliers_score_test.pth")
 
     extraloader = datasets.get_dataloader(args.root_openset, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms(), shuffle=False)
 
     print("Getting outlier scores for ood set")
     outlier_scores_extra = eval_ii.eval_outlier_scores(extraloader, net, train_data_means, device=args.device)
-    torch.save(outlier_scores_extra, "outliers_score_ood.pth")
+    torch.save(outlier_scores_extra, f"{args.model_path}_outliers_score_ood.pth")
 
     plt.hist(outlier_scores_test.detach().cpu().numpy(), bins=100, alpha=.5, density=True, label="test")
     plt.hist(outlier_scores_extra.detach().cpu().numpy(), bins=100, alpha=.5, density=True, label="extra")
     plt.legend(loc="upper right")
-    plt.savefig("outlier_scores.png")
+    plt.savefig(f"{args.model_path}_outlier_scores.png")
 
 
 
