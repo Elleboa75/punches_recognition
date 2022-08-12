@@ -23,6 +23,7 @@ def get_args():
     parser.add_argument("--pretrained_params_path", type=str, default=None, help="path to pretrained params. Ignored if --use_pretrained is not set. If --use_pretrained is set and this arg is left to None, defaults to loading the ImageNet-pretrained params from torchvision (default: None).")
     parser.add_argument("--model_class", type=str, default="resnet18", choices=["resnet18", "resnet34", "resnet50"],help="model class (default: resnet18).")
     parser.add_argument("--device", type=str, default=None, help="device to use (default: None -> use CUDA if available).")
+    parser.add_argument("--load_trained_model", type=str, default=None, help="path to trained model. Bypasses all training args (default: None).")
     return parser.parse_args()
 
 def main():
@@ -30,27 +31,32 @@ def main():
     trainloader = datasets.get_dataloader(args.root_train, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms())
     num_classes = len(trainloader.dataset.classes)
 
-    pretrained = args.use_pretrained
-    pretrained_params = None
-    if args.use_pretrained and args.pretrained_params_path is not None:
-        pretrained = False
-        pretrained_params = torch.load(args.pretrained_params_path, map_location="cpu")
-    elif args.use_prerained:
-        raise NotImplementedError("Loading pretrained params from torchvision is not implemented yet.")
     net = models.ResNetCustom(num_classes, args.model_class, dim_latent=args.dim_latent)
-    if pretrained_params is not None:
-        # load state dict with strict set to False because the model has 2 FC heads instead of 1
-        net.load_state_dict(pretrained_params, strict=False)
+
+    if args.load_trained_model is not None:
+        net.load_state_dict(torch.load(args.load_trained_model))
+    else:
+        pretrained = args.use_pretrained
+        pretrained_params = None
+        if args.use_pretrained and args.pretrained_params_path is not None:
+            pretrained = False
+            pretrained_params = torch.load(args.pretrained_params_path, map_location="cpu")
+        elif args.use_prerained:
+            raise NotImplementedError("Loading pretrained params from torchvision is not implemented yet.")
+        
+        if pretrained_params is not None:
+            # load state dict with strict set to False because the model has 2 FC heads instead of 1
+            net.load_state_dict(pretrained_params, strict=False)
 
 
-    ii_loss_fn = ii_loss.IILoss()
-    ce_loss_fn = torch.nn.CrossEntropyLoss()
-    optimizer = RAdam(net.parameters(), lr=args.lr)
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_decay_epochs, gamma=args.lr_decay_gamma)
+        ii_loss_fn = ii_loss.IILoss()
+        ce_loss_fn = torch.nn.CrossEntropyLoss()
+        optimizer = RAdam(net.parameters(), lr=args.lr)
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_decay_epochs, gamma=args.lr_decay_gamma)
 
-    train.train_model(net, trainloader, ii_loss_fn, ce_loss_fn, args.epochs, optimizer, scheduler, args.device, lambda_scale=args.lambda_ii)
-    torch.save(net.state_dict(), args.model_path)
-    print(f"Model saved to {args.model_path}")
+        train.train_model(net, trainloader, ii_loss_fn, ce_loss_fn, args.epochs, optimizer, scheduler, args.device, lambda_scale=args.lambda_ii)
+        torch.save(net.state_dict(), args.model_path)
+        print(f"Model saved to {args.model_path}")
 
     print("Getting trainset means")
     train_data_means = eval_ii.get_mean_embeddings(trainloader, net, device=args.device)
