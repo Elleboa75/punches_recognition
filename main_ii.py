@@ -24,6 +24,7 @@ def get_args():
     parser.add_argument("--model_class", type=str, default="resnet18", choices=["resnet18", "resnet34", "resnet50"],help="model class (default: resnet18).")
     parser.add_argument("--device", type=str, default=None, help="device to use (default: None -> use CUDA if available).")
     parser.add_argument("--load_trained_model", type=str, default=None, help="path to trained model. Bypasses all training args (default: None).")
+    parser.add_argument("--alternate_backprop", action="store_true", default=False, help="alternate backprop between II Loss and CE Loss (default: False).")
     return parser.parse_args()
 
 def main():
@@ -54,12 +55,12 @@ def main():
         optimizer = RAdam(net.parameters(), lr=args.lr)
         scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_decay_epochs, gamma=args.lr_decay_gamma)
 
-        train.train_model(net, trainloader, ii_loss_fn, ce_loss_fn, args.epochs, optimizer, scheduler, args.device, lambda_scale=args.lambda_ii)
+        train.train_model(net, trainloader, ii_loss_fn, ce_loss_fn, args.epochs, optimizer, scheduler, args.device, lambda_scale=args.lambda_ii, alternate_backprop=args.alternate_backprop)
         torch.save(net.state_dict(), args.model_path)
         print(f"Model saved to {args.model_path}")
 
     print("Getting trainset means")
-    train_data_means = eval_ii.get_mean_embeddings(trainloader, net, device=args.device)
+    train_data_means = eval_ii.get_mean_embeddings(trainloader, net, device=args.device,)
 
     print("Evaluating accuracy on testset")
     testloader = datasets.get_dataloader(args.root_test, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms(), shuffle=False)
