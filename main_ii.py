@@ -1,7 +1,8 @@
 import argparse
 import torch
+from matplotlib import pyplot as plt
 from punches_lib import datasets
-from punches_lib.ii_loss import ii_loss, models, train
+from punches_lib.ii_loss import ii_loss, models, train, eval as eval_ii
 from punches_lib.cnn import eval
 from punches_lib.radam import RAdam
 
@@ -16,6 +17,7 @@ def get_args():
     parser.add_argument("--lambda_ii", type=float, default=1, help="weight of the II-loss (default: 1).")
     parser.add_argument("--root_train", type=str, default="data/train", help="root of training data (default: data/train).")
     parser.add_argument("--root_test", type=str, default="data/test", help="root of testing data (default: data/test).")
+    parser.add_argument("--root_openset", type=str, default="data/openset", help="root of ood data (default: data/openset).")
     parser.add_argument("--model_path", type=str, default="model/model_ii.pth", help="path to save model (default: model/model.pth).")
     parser.add_argument("--use_pretrained", action="store_true", default=False, help="use pretrained model. The weigths used depend on the next arg (default: False).")
     parser.add_argument("--pretrained_params_path", type=str, default=None, help="path to pretrained params. Ignored if --use_pretrained is not set. If --use_pretrained is set and this arg is left to None, defaults to loading the ImageNet-pretrained params from torchvision (default: None).")
@@ -50,9 +52,24 @@ def main():
     torch.save(net.state_dict(), args.model_path)
     print(f"Model saved to {args.model_path}")
 
+    train_data_means = eval_ii.get_mean_embeddings(trainloader, net, device=args.device)
+
     testloader = datasets.get_dataloader(args.root_test, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms(), shuffle=False)
     # for now, test only on accuracy
     eval.test_model(net, testloader, args.device)
+
+    outlier_scores_test = eval_ii.eval_outlier_scores(testloader, net, train_data_means, device=args.device)
+
+    extraloader = datasets.get_dataloader(args.root_openset, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms(), shuffle=False)
+
+    outlier_scores_extra = eval_ii.eval_outlier_scores(extraloader, net, train_data_means, device=args.device)
+
+    plt.hist(outlier_scores_test.detach().cpu().numpy(), bins=100, alpha=.5, label="test")
+    plt.hist(outlier_scores_extra.detach().cpu().numpy(), bins=100, alpha=.5, label="extra")
+    plt.legend(loc="upper right")
+    plt.savefig("outlier_scores.png")
+
+
 
 if __name__ == "__main__":
     main()
