@@ -12,7 +12,8 @@ def train_model(
     num_epochs:int,
     optimizer:torch.optim.Optimizer,
     lr_scheduler:torch.optim.lr_scheduler._LRScheduler=None,
-    device:Union[torch.device, str]=None
+    device:Union[torch.device, str]=None,
+    lambda_scale:int=1
 ):
     '''
     Trains a model with the given parameters using a dual loss composed of IILoss and CELoss.
@@ -27,6 +28,7 @@ def train_model(
     num_epochs: an integer indicating the number of epochs to train.
     lr_scheduler: a learning rate scheduler - torch.optim.lr_scheduler._LRScheduler instance.
     device: a torch.device instance or a string indicating the device to use. If None, will use CUDA if available.
+    lambda_scale: an integer indicating the scale of the lambda parameter in the IILoss.
     '''
 
     if device is None:
@@ -53,7 +55,7 @@ def train_model(
             # 2. get the predictions from the current state of the model
             embeddings, y_hat = model(X)
             # 3. calculate ii_loss and backpropagate
-            ii_loss = ii_loss_fn(embeddings, y, num_classes)
+            ii_loss = ii_loss_fn(embeddings, y, num_classes) * lambda_scale
             ii_loss.backward(retain_graph=True)
             # 4. calculate ce_loss and backpropagate
             ce_loss = ce_loss_fn(y_hat, y)

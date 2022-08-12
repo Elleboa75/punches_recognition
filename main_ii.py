@@ -13,6 +13,7 @@ def get_args():
     parser.add_argument("--lr", type=float, default=0.001, help="learning rate (default: 0.001).")
     parser.add_argument("--lr_decay_gamma", type=float, default=0.1, help="learning rate decay factor (default: 0.1).")
     parser.add_argument("--lr_decay_epochs", type=int, nargs="*", default=[10, 15], help="learning rate decay epochs (default: 10 and 15).")
+    parser.add_argument("--lambda_ii", type=float, default=1, help="weight of the II-loss (default: 1).")
     parser.add_argument("--root_train", type=str, default="data/train", help="root of training data (default: data/train).")
     parser.add_argument("--root_test", type=str, default="data/test", help="root of testing data (default: data/test).")
     parser.add_argument("--model_path", type=str, default="model/model_ii.pth", help="path to save model (default: model/model.pth).")
@@ -45,7 +46,7 @@ def main():
     optimizer = RAdam(net.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=args.lr_decay_epochs, gamma=args.lr_decay_gamma)
 
-    train.train_model(net, trainloader, ii_loss_fn, ce_loss_fn, args.epochs, optimizer, scheduler, args.device)
+    train.train_model(net, trainloader, ii_loss_fn, ce_loss_fn, args.epochs, optimizer, scheduler, args.device, lambda_scale=args.lambda_ii)
     torch.save(net.state_dict(), args.model_path)
     print(f"Model saved to {args.model_path}")
 
