@@ -13,7 +13,7 @@ class IILoss(torch.nn.Module):
     delta: a float representing the maximum inter_separation between classes. It is used to prevent the inter_separation term from dominating the intra_spread term and other losses such as cross-entropy.
     '''
     def __init__(self, delta:float=float("inf")):
-        self.delta = delta
+        self.delta = torch.Tensor([delta])
 
     def forward(self, embeddings:torch.Tensor, labels:torch.Tensor, num_classes:int) -> torch.Tensor:
         '''
@@ -51,7 +51,7 @@ class IILoss(torch.nn.Module):
                 norm_from_previous_means = (class_mean_previous - class_mean[j]).norm(dim=1)**2
                 inter_separation = min(inter_separation, norm_from_previous_means.min())
         
-        return intra_spread/n_datapoints - min(self.delta, inter_separation)
+        return intra_spread/n_datapoints - torch.min(self.delta, inter_separation)
 
 def outlier_score(embeddings:torch.Tensor, train_class_means:torch.Tensor):
     '''
