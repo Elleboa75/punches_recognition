@@ -19,7 +19,7 @@ def test_model(model:torch.nn.Module, dataloader:torch.utils.data.DataLoader, lo
     performance_meter = utils.AverageMeter()
     
     if device is None:
-        device = utils.use_gpu_if_possible()
+        device = utils.use_cuda_if_possible()
 
     model = model.to(device)
 
