@@ -64,6 +64,9 @@ def main():
         filtered_testset = utils.subset_imagefolder(testloader.dataset, test_non_ood)
         filtered_testloader = torch.utils.data.DataLoader(filtered_testset, batch_size=args.batch_size, shuffle=False, num_workers=4)
         eval_ii.test_model(net, filtered_testloader, device=args.device)
+
+if __name__ == "__main__":
+    main()
     
 
 
