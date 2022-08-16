@@ -33,8 +33,9 @@ def main():
     thresholds = torch.linspace(0, max_score, num_steps)
     eval_results = eval_ii.eval_multiple_outlier_scores_series_on_thresholds((scores_valid, scores_crops, scores_ood), (torch.gt, torch.lt, torch.lt), thresholds, series_names=("validation", "crops", "ood"))
 
+    eval_results = pd.DataFrame(eval_results, columns=["threshold", "validation", "crops", "ood"])
     print(eval_results)
-    pd.DataFrame(eval_results).to_csv(args.save_path)
+    eval_results.to_csv(args.save_path)
     
 
 if __name__ == "__main__":

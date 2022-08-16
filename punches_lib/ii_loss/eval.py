@@ -72,11 +72,13 @@ def eval_multiple_outlier_scores_series_on_thresholds(outlier_scores:Collection[
     if isinstance(thresholds, float):
         thresholds = [thresholds]
 
-    results = {}
+    results = {"threshold": []}
+    for name in series_names:
+        results[name] = []
     for th in thresholds:
-        results[th] = {}
+        results["threshold"].append(th)
         for scores, fn, name in zip(outlier_scores, comparison_fns, series_names):
-            results[th][name] = eval_on_threshold(scores, th, fn)
+            results[name].append(eval_on_threshold(scores, th, fn))
     return results
 
 def test_model(model:torch.nn.Module, dataloader:torch.utils.data.DataLoader, loss_fn=None, device=None):
