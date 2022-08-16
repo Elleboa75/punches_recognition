@@ -61,6 +61,8 @@ def main():
         if outlier_score < args.classif_threshold:
             non_ood_punch_id[punch_id] += 1
 
+    print(non_ood_punch_id)
+
     class_id_to_punch_id = {id:name for id, name in testloader.dataset.class_to_idx.items()}
     print("PER-PUNCH OOD ACCURACY")
     targets = torch.Tensor(testloader.dataset.targets).int()
