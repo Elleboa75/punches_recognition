@@ -114,6 +114,8 @@ def test_model(model:torch.nn.Module, dataloader:torch.utils.data.DataLoader, lo
     model.eval()
     with torch.no_grad():
         for X, y in dataloader:
+            print(X)
+            print(y)
             X = X.to(device)
             y = y.to(device)
             
