@@ -56,6 +56,9 @@ def main():
     sens_spec = 2 * sensitivity * specificity / (sensitivity + specificity)
     print(f"Sensitivity: {sensitivity:.4f} | Specificity: {specificity:.4f} | Sens<->Spec: {sens_spec:.4f}")
 
+    crops_accuracy = (outlier_scores_crops >= args.classif_threshold).sum().item() / len(outlier_scores_crops)
+    print(f"Crops accuracy: {crops_accuracy:.4f}")
+
     if args.calc_test_accuracy:
         print(f"Testing model - {test_non_ood.sum().item()} samples removed from testset")
         filtered_testset = utils.subset_imagefolder(testloader.dataset, test_non_ood)
