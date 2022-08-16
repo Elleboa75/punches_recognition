@@ -63,8 +63,9 @@ def main():
 
     class_id_to_punch_id = {id:name for id, name in testloader.dataset.class_to_idx.items()}
     print("PER-PUNCH OOD ACCURACY")
+    targets = torch.Tensor(testloader.dataset.targets).int()
     for cl, count in non_ood_punch_id.items():
-        num_items = len(testloader.dataset.targets[testloader.dataset.targets == cl])
+        num_items = len(targets[targets == cl])
         print(f"Class: {cl} [ID: {class_id_to_punch_id[cl]}] - correct: {count} - num items: {num_items}-| accuracy: {count/num_items:.4f}")
   
 
