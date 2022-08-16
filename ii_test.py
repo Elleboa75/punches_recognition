@@ -52,7 +52,7 @@ def main():
 
     test_non_ood = outlier_scores_test < args.classif_threshold
     sensitivity = test_non_ood.sum().item() / len(outlier_scores_test)
-    specificity = (outlier_scores_ood >= args.threshold).sum().item() / len(outlier_scores_ood)
+    specificity = (outlier_scores_ood >= args.classif_threshold).sum().item() / len(outlier_scores_ood)
     sens_spec = 2 * sensitivity * specificity / (sensitivity + specificity)
     print(f"Sensitivity: {sensitivity:.4f} | Specificity: {specificity:.4f} | Sens<->Spec: {sens_spec:.4f}")
 
