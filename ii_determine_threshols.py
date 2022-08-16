@@ -15,7 +15,6 @@ def get_args():
     parser.add_argument("--path_outlier_scores_crops", type=str, default="model/model_ii.pth_crops.pth", help="path to the outlier scores of the ood set (default: model/model_ii.pth_crops.pth).")
     parser.add_argument("--path_outlier_scores_ood", type=str, default="model/model_ii.pth_ood.pth", help="path to the outlier scores of the ood set (default: model/model_ii.pth_ood.pth).")
     parser.add_argument("--save_path", type=str, default="model/model_ii_hist.png", help="path where the hist will be saved (default: model/model_ii_hist.png).")
-    plt.hist()
     return parser.parse_args()
 
 def main():
