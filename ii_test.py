@@ -56,8 +56,7 @@ def main():
     sens_spec = 2 * sensitivity * specificity / (sensitivity + specificity)
     print(f"Sensitivity: {sensitivity:.4f} | Specificity: {specificity:.4f} | Sens<->Spec: {sens_spec:.4f}")
 
-    non_ood_punch_id = {cl: [] for cl in range(len(testloader.dataset.classes))}
-    print(non_ood_punch_id)
+    non_ood_punch_id = {cl: 0 for cl in range(len(testloader.dataset.classes))}
     for outlier_score, punch_id in zip(outlier_scores_test, testloader.dataset.targets):
         if outlier_score < args.classif_threshold:
             non_ood_punch_id[punch_id] += 1
