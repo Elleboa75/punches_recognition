@@ -61,10 +61,8 @@ def main():
         if outlier_score < args.classif_threshold:
             non_ood_punch_id[punch_id] += 1
 
-    print(non_ood_punch_id)
 
     class_id_to_punch_id = {id:name for name, id in testloader.dataset.class_to_idx.items()}
-    print(class_id_to_punch_id)
     print("PER-PUNCH OOD ACCURACY")
     targets = torch.Tensor(testloader.dataset.targets).int()
     for cl, count in non_ood_punch_id.items():
@@ -75,7 +73,6 @@ def main():
     crops_accuracy = (outlier_scores_crops >= args.classif_threshold).sum().item() / len(outlier_scores_crops)
     print(f"Crops accuracy: {crops_accuracy:.4f}")
 
-    print("debug test non ood", test_non_ood)
 
     if args.calc_test_accuracy:
         print(f"Testing model - {test_non_ood.sum().item()} samples removed from testset")
