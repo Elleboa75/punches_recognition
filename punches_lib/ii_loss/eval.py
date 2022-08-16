@@ -115,8 +115,7 @@ def test_model(model:torch.nn.Module, dataloader:torch.utils.data.DataLoader, lo
     with torch.no_grad():
         for X, y in dataloader:
             X = X.to(device)
-            print(y)
-            y = torch.Tensor(y).to(device)
+            y = y.to(device)
             
             _, y_hat = model(X)
             loss = loss_fn(y_hat, y) if loss_fn is not None else None
