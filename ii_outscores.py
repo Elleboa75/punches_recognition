@@ -3,7 +3,6 @@ import torch
 from matplotlib import pyplot as plt
 from punches_lib import datasets
 from punches_lib.ii_loss import ii_loss, models, train, eval as eval_ii
-from punches_lib.cnn import eval
 from punches_lib.radam import RAdam
 
 def get_args():
@@ -47,7 +46,7 @@ def main():
     torch.save(outlier_scores_crops, f"{args.base_path}_crops.pth")
 
     if args.calc_valid_accuracy:
-        eval.test_model(net, validloader, device=args.device)
+        eval_ii.test_model(net, validloader, device=args.device)
 
 if __name__ == "__main__":
     main()
