@@ -32,8 +32,10 @@ def main():
     num_steps = int(max_score / args.by) + 1
     thresholds = torch.linspace(0, max_score, num_steps)
     eval_results = eval_ii.eval_multiple_outlier_scores_series_on_thresholds((scores_valid, scores_crops, scores_ood), (torch.lt, torch.gt, torch.gt), thresholds, series_names=("validation", "crops", "ood"))
+    eval_results["recall"] = eval_results.validation_N_corr / (eval_results.validation_N_corr + (eval_results.ood_N - eval_results.ood_N_corr))
+    eval_results["f1"] = 2 * eval_results.recall * eval_results.validation_pct / (eval_results.recall + eval_results.validation_pct)
 
-    eval_results = pd.DataFrame(eval_results, columns=["threshold", "validation", "crops", "ood"])
+    eval_results = pd.DataFrame(eval_results)
     print(eval_results)
     eval_results.to_csv(args.save_path)
     

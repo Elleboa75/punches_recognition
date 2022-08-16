@@ -50,7 +50,7 @@ def eval_on_threshold(outlier_scores:torch.Tensor, threshold:float, comparison_f
     threshold: a float specifying the threshold to use
     comparison_fn: a torch.Tensor comparison function (e.g., torch.gt, torch.le). Defaults to torch.gt. It operates the comparison between the outlier scores and the threshold. E.g., if comparison_fn is torch.gt, then it evals on outlier scores being greater than the threshold.
     '''
-    return (comparison_fn(outlier_scores, threshold)).float().mean().item()
+    return (comparison_fn(outlier_scores, threshold)).sum().item()
 
 def eval_multiple_outlier_scores_series_on_thresholds(outlier_scores:Collection[torch.Tensor], comparison_fns:Collection, thresholds:Union[float,Collection[float]], series_names:Collection[str]=None) -> List[float]:
     '''
@@ -74,11 +74,16 @@ def eval_multiple_outlier_scores_series_on_thresholds(outlier_scores:Collection[
 
     results = {"threshold": []}
     for name in series_names:
-        results[name] = []
+        results[name + "_N"] = []
+        results[name + "_N_corr"] = []
+        results[name + "_pct"] = []
     for th in thresholds:
         results["threshold"].append(th)
         for scores, fn, name in zip(outlier_scores, comparison_fns, series_names):
-            results[name].append(eval_on_threshold(scores, th, fn))
+            results[name + "_N"].append(len(scores))
+            N_corr = eval_on_threshold(scores, th, fn)
+            results[name + "_N_corr"].append(N_corr)
+            results[name + "_pct"].append(N_corr / len(scores))
     return results
 
 def test_model(model:torch.nn.Module, dataloader:torch.utils.data.DataLoader, loss_fn=None, device=None):
