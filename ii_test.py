@@ -75,7 +75,7 @@ def main():
 
 
     if args.calc_test_accuracy:
-        print(f"Testing model - {(1-test_non_ood).sum().item()} samples removed from testset")
+        print(f"Testing model - {(1-test_non_ood.int()).abs().sum().item()} samples removed from testset")
         filtered_testset = utils.subset_imagefolder(testloader.dataset, test_non_ood)
         filtered_testloader = torch.utils.data.DataLoader(filtered_testset, batch_size=args.batch_size, shuffle=False, num_workers=4)
         eval_ii.test_model(net, filtered_testloader, device=args.device)
