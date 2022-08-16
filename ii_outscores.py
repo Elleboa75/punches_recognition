@@ -14,7 +14,8 @@ def get_args():
     parser.add_argument("--batch_size", type=int, default=32, help="batch size for training (default: 32).")
     parser.add_argument("--num_classes", type=int, default=19, help="number of classes in the dataset (default: 19).")
     parser.add_argument("--root_valid", type=str, default="data/test", help="root of testing data (default: data/test).")
-    parser.add_argument("--root_crops", type=str, default="data/openset", help="root of ood data (default: data/openset).")
+    parser.add_argument("--root_crops", type=str, default="data/crops", help="root of crops data (default: data/crops).")
+    parser.add_argument("--root_ood", type=str, default="data/openset", help="root of ood data (default: data/openset).")
     parser.add_argument("--pretrained_params_path", type=str, default=None, help="path to pretrained params. Ignored if --use_pretrained is not set. If --use_pretrained is set and this arg is left to None, defaults to loading the ImageNet-pretrained params from torchvision (default: None).")
     parser.add_argument("--model_class", type=str, default="resnet18", choices=["resnet18", "resnet34", "resnet50"],help="model class (default: resnet18).")
     parser.add_argument("--dim_latent", type=int, default=32, help="dimension of latent space (default: 32).")
@@ -42,12 +43,16 @@ def main():
 
     validloader = datasets.get_dataloader(args.root_valid, args.batch_size, shuffle=False, transforms=datasets.get_bare_transforms())
     cropsloader = datasets.get_dataloader(args.root_crops, args.batch_size, shuffle=False, transforms=datasets.get_bare_transforms())
+    oodloader = datasets.get_dataloader(args.root_ood, args.batch_size, shuffle=False, transforms=datasets.get_bare_transforms())
 
     outlier_scores_valid = eval_ii.eval_outlier_scores(validloader, net, mean_embeddings, device=args.device)
     torch.save(outlier_scores_valid, f"{args.base_path}_valid.pth")
 
     outlier_scores_crops = eval_ii.eval_outlier_scores(cropsloader, net, mean_embeddings, device=args.device)
     torch.save(outlier_scores_crops, f"{args.base_path}_crops.pth")
+
+    outlier_scores_ood = eval_ii.eval_outlier_scores(oodloader, net, mean_embeddings, device=args.device)
+    torch.save(outlier_scores_ood, f"{args.base_path}_ood.pth")
 
     if args.calc_valid_accuracy:
         eval_ii.test_model(net, validloader, device=args.device)
