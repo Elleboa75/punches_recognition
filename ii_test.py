@@ -56,8 +56,22 @@ def main():
     sens_spec = 2 * sensitivity * specificity / (sensitivity + specificity)
     print(f"Sensitivity: {sensitivity:.4f} | Specificity: {specificity:.4f} | Sens<->Spec: {sens_spec:.4f}")
 
+    non_ood_punch_id = {cl: [] for cl in testloader.dataset.classes}
+    for outlier_score, punch_id in zip(outlier_scores_test, testloader.dataset.targets):
+        if outlier_score < args.classif_threshold:
+            non_ood_punch_id[punch_id] += 1
+
+    class_id_to_punch_id = {id:name for id, name in testloader.dataset.class_to_idx.items()}
+    print("PER-PUNCH OOD ACCURACY")
+    for cl, count in non_ood_punch_id.items():
+        num_items = len(testloader.targets[testloader.targets == cl])
+        print(f"Class: {cl} [ID: {class_id_to_punch_id[cl]}] - correct: {count} - num items: {num_items}-| accuracy: {count/num_items:.4f}")
+  
+
     crops_accuracy = (outlier_scores_crops >= args.classif_threshold).sum().item() / len(outlier_scores_crops)
     print(f"Crops accuracy: {crops_accuracy:.4f}")
+
+    print("debug test non ood", test_non_ood)
 
     if args.calc_test_accuracy:
         print(f"Testing model - {test_non_ood.sum().item()} samples removed from testset")
