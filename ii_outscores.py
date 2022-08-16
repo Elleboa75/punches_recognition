@@ -1,9 +1,13 @@
 import argparse
+
 import torch
 from matplotlib import pyplot as plt
+
 from punches_lib import datasets
-from punches_lib.ii_loss import ii_loss, models, train, eval as eval_ii
+from punches_lib.ii_loss import eval as eval_ii
+from punches_lib.ii_loss import models
 from punches_lib.radam import RAdam
+
 
 def get_args():
     parser = argparse.ArgumentParser()
