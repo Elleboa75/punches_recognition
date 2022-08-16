@@ -62,6 +62,7 @@ def main():
 
     print("Getting trainset means")
     train_data_means = eval_ii.get_mean_embeddings(trainloader, net, device=args.device,)
+    torch.save(train_data_means, f"{args.model_path}_means.pth")
 
     print("Evaluating accuracy on testset")
     testloader = datasets.get_dataloader(args.root_test, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms(), shuffle=False)
