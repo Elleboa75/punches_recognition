@@ -21,12 +21,16 @@ def get_args():
 def main():
     args = get_args()
 
-    scores_valid = torch.load(args.path_outlier_scores_valid)
-    scores_crops = torch.load(args.path_outlier_scores_crops)
-    scores_ood = torch.load(args.path_outlier_scores_ood)
+    scores_valid = torch.load(args.path_outlier_scores_valid, map_location="cpu")
+    scores_crops = torch.load(args.path_outlier_scores_crops, map_location="cpu")
+    scores_ood = torch.load(args.path_outlier_scores_ood, map_location="cpu")
 
-    plt.hist(scores_valid, bins=100, label="valid", alpha=0.5, density=True)
-    plt.hist(scores_crops, bins=100, label="crops", alpha=0.5, density=True)
-    plt.hist(scores_ood, bins=100, label="ood", alpha=0.5, density=True)
+    plt.hist(scores_valid.numpy(), bins=100, label="valid", alpha=0.5, density=True)
+    plt.hist(scores_crops.numpy(), bins=100, label="crops", alpha=0.5, density=True)
+    plt.hist(scores_ood.numpy(), bins=100, label="ood", alpha=0.5, density=True)
     plt.legend(loc="upper right")
     plt.savefig(args.save_path)
+
+if __name__ == "__main__":
+    main()
+
