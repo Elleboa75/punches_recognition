@@ -1,4 +1,7 @@
+from typing import Collection
 import torch
+import torchvision
+from copy import deepcopy
 
 def use_cuda_if_possible():
     '''
@@ -70,3 +73,10 @@ def bucket_mean(embeddings:torch.Tensor, labels:torch.Tensor, num_classes:int) -
     tot = torch.zeros(num_classes, embeddings.shape[1], device=device).index_add(0, labels, embeddings)
     count = torch.zeros(num_classes, embeddings.shape[1], device=device).index_add(0, labels, torch.ones_like(embeddings))
     return tot/count
+
+def subset_imagefolder(imagefolder:torchvision.datasets.ImageFolder, indices:Collection[bool]):
+    d = deepcopy(imagefolder)
+    d.imgs = d.imgs[indices]
+    d.samples = d.samples[indices]
+    d.targets = d.targets[indices]
+    return d
