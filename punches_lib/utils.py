@@ -81,5 +81,5 @@ def subset_imagefolder(imagefolder:torchvision.datasets.ImageFolder, indices:Col
     d = deepcopy(imagefolder)
     d.imgs = (np.array(d.imgs)[indices]).tolist()
     d.samples = (np.array(d.samples)[indices]).tolist()
-    d.targets = (np.array(d.targets[indices])).tolist()
+    d.targets = (np.array(d.targets)[indices]).tolist()
     return d
