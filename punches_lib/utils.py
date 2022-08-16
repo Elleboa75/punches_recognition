@@ -76,12 +76,8 @@ def bucket_mean(embeddings:torch.Tensor, labels:torch.Tensor, num_classes:int) -
     return tot/count
 
 def subset_imagefolder(imagefolder:torchvision.datasets.ImageFolder, indices:Collection[bool]):
-    indices = indices.numpy()
-
     d = deepcopy(imagefolder)
-    d.imgs = (np.array(d.imgs)[indices]).tolist()
-    d.samples = (np.array(d.samples)[indices]).tolist()
-    d.targets = (np.array(d.targets)[indices]).tolist()
-    print(d.targets)
-    d.targets = [int(t) for t in d.targets]
+    d.imgs = [img for (img, idx) in zip(d.imgs, indices) if idx]
+    d.samples = [sample for (sample, idx) in zip(d.samples, indices) if idx]
+    d.targets = [target for (target, idx) in zip(d.targets, indices) if idx]
     return d
