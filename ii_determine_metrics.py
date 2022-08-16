@@ -37,9 +37,10 @@ def main():
     eval_results["recall"] = eval_results.validation_N_corr / (eval_results.validation_N_corr + (eval_results.ood_N - eval_results.ood_N_corr))
     eval_results["f1"] = 2 * eval_results.recall * eval_results.validation_pct / (eval_results.recall + eval_results.validation_pct)
     eval_results["sens_spec"] = 2 * eval_results.validation_pct * eval_results.ood_pct / (eval_results.validation_pct + eval_results.ood_pct)
+    eval_results["W_sens_spec"] = 5 * eval_results.validation_pct * eval_results.ood_pct / (4*eval_results.validation_pct + eval_results.ood_pct)
 
     
-    print(eval_results.nlargest(1, "sens_spec"))
+    print(eval_results.nlargest(1, "W_sens_spec"))
     eval_results.to_csv(args.save_path)
     
 
