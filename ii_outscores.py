@@ -32,7 +32,7 @@ def main():
     net.load_state_dict(torch.load(args.pretrained_params_path))
 
     if args.root_train is not None:
-        trainloader = datasets.get_trainloader(args.root_train, args.batch_size, shuffle=False, transforms=datasets.get_bare_transforms())
+        trainloader = datasets.get_dataloader(args.root_train, args.batch_size, shuffle=False, transforms=datasets.get_bare_transforms())
         mean_embeddings = eval_ii.get_mean_embeddings(trainloader, net, device=args.device)
     else:
         mean_embeddings = torch.load(args.mean_embedding_path)
