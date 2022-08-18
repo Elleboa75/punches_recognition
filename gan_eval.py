@@ -29,33 +29,37 @@ def load_args():
     parser.add_argument("--by", type=float, default=0.05, help="Calculation of performance: increment used for swiping the axis 0-1 in search of a threshold (default: 0.05).")
     parser.add_argument("--save_performance_path", type=str, default="performance.csv", help="Path where to save the performance as a CSV file (default: performance.csv).")
     parser.add_argument("--device", type=str, default=None, help="Device to use for the computations (default: None -> use CUDA if available).")
+    parser.add_argument("--verbose", action="store_true", default=False, help="Verbose mode (default: False).")
     args = parser.parse_args()
     return args
 
 def main():
     args = load_args()
-    print(args)
     
     # INSTANTIATE DISCRIMINATOR AND LOAD WEIGHTS
     netD = models.DiscriminatorFunnel(num_channels=args.input_channel_dim, base_width=args.base_width)
     x = torch.load(args.discriminator_path)
     netD.load_state_dict(torch.load(args.discriminator_path))
 
-    print("...Discriminator loaded.")
+    if args.verbose:
+        print("...Discriminator loaded.")
 
-    print("...Getting datasets:", end=" ")
+        print("...Getting datasets:", end=" ")
     # OBTAIN THE FEATURES AND DATALOADERS
     dataset_valid = datasets.get_dataset(args.validset_root, transforms=datasets.get_bare_transforms()) if args.validset_root is not None else None
     dataset_open = datasets.get_dataset(args.openset_root, transforms=datasets.get_bare_transforms()) if args.openset_root is not None else None
-    print("\u2713")    
+    if args.verbose:
+        print("\u2713")    
 
-    print("...Computing features")
-    print("\t\t Validation:", end=" ")
+        print("...Computing features")
+        print("\t\t Validation:", end=" ")
     valid_features = features.get_features(args.path_features_valid, args.force_feats_recalculation, dataset_valid, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device) if dataset_valid is not None else None
-    print("\u2713")
-    print("\t\t Open:", end=" ")
+    if args.verbose:
+        print("\u2713")
+        print("\t\t Open:", end=" ")
     open_features = features.get_features(args.path_features_open, args.force_feats_recalculation, dataset_open, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device) if dataset_open is not None else None
-    print("\u2713")
+    if args.verbose:
+        print("\u2713")
 
     
     # train_features = features.get_features(args.path_features_train, False, None, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if args.path_features_train is not None else None
@@ -65,13 +69,16 @@ def main():
     openloader = DataLoader(datasets.BasicDataset(open_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if open_features is not None else None
     
     # outs_train = testing.get_outputs(netD, trainloader).squeeze() if trainloader is not None else None
-    print("...Evaluating discriminator")
-    print("\t\t Validation:", end=" ")
+    if args.verbose:
+        print("...Evaluating discriminator")
+        print("\t\t Validation:", end=" ")
     outs_valid = testing.get_outputs(netD, validloader, device=args.device).squeeze() if validloader is not None else None
-    print("\u2713")
-    print("\t\t Open:", end=" ")
+    if args.verbose:
+        print("\u2713")
+        print("\t\t Open:", end=" ")
     outs_open = testing.get_outputs(netD, openloader, device=args.device).squeeze() if openloader is not None else None
-    print("\u2713")
+    if args.verbose:
+        print("\u2713")
 
     
 
