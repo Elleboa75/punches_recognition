@@ -47,7 +47,7 @@ def main():
     # OBTAIN THE FEATURES AND DATALOADERS
     dataset_valid = datasets.get_dataset(args.validset_root, transforms=datasets.get_bare_transforms()) if args.validset_root is not None else None
     dataset_open = datasets.get_dataset(args.openset_root, transforms=datasets.get_bare_transforms()) if args.openset_root is not None else None
-    print("X")    
+    print("\u2713")    
 
     print("...Computing features")
     print("\t\t Validation:", end=" ")
@@ -57,7 +57,7 @@ def main():
     open_features = features.get_features(args.path_features_open, args.force_feats_recalculation, dataset_open, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device) if dataset_open is not None else None
     print("\u2713")
 
-    print(f"...Check...\n\t\t Validation: {valid_features is not None} ({valid_features.shape}) \n\t\t Open: {open_features is not None} ({open_features.shape})")
+    
     # train_features = features.get_features(args.path_features_train, False, None, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if args.path_features_train is not None else None
 
     # trainloader = DataLoader(datasets.BasicDataset(train_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if train_features is not None else None
@@ -73,7 +73,7 @@ def main():
     outs_open = testing.get_outputs(netD, openloader, device=args.device).squeeze() if openloader is not None else None
     print("\u2713")
 
-    print("...Check...\n\t\t Validation: {outs_valid is not None} ({outs_valid.shape}) \n\t\t Open: {outs_open is not None} ({outs_open.shape})")
+    
 
     if (fold:=args.folder_save_outputs) is not None:
         os.makedirs(fold, exist_ok=True)
