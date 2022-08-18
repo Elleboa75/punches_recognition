@@ -55,7 +55,7 @@ def get_performance(
     # outputs_randcrops:torch.Tensor,
     increment:float=.05
 ) -> pd.DataFrame:
-    performance = {"threshold": [], "valid": [], "ood": [], "randcrops": []}
+    performance = {"threshold": [], "valid": [], "ood": [], "W": []}
     for i in torch.linspace(increment, 1.0 - increment, int(1.0 / increment)+1):
         performance["threshold"].append(i.item())
         sensitivity = len(outputs_valid[outputs_valid>i])/len(outputs_valid)

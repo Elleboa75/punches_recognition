@@ -51,9 +51,10 @@ def main():
     print("...Computing features")
     print("\t\t Validation:", end=" ")
     valid_features = features.get_features(args.path_features_valid, args.force_feats_recalculation, dataset_valid, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device) if dataset_valid is not None else None
-    print("X")
+    print("\u2713")
     print("\t\t Open:", end=" ")
     open_features = features.get_features(args.path_features_open, args.force_feats_recalculation, dataset_open, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device) if dataset_open is not None else None
+    print("\u2713")
     # train_features = features.get_features(args.path_features_train, False, None, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if args.path_features_train is not None else None
 
     # trainloader = DataLoader(datasets.BasicDataset(train_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if train_features is not None else None
@@ -64,10 +65,10 @@ def main():
     print("...Evaluating discriminator")
     print("\t\t Validation:", end=" ")
     outs_valid = testing.get_outputs(netD, validloader, device=args.device).squeeze() if validloader is not None else None
-    print("X")
+    print("\u2713")
     print("\t\t Open:", end=" ")
     outs_open = testing.get_outputs(netD, openloader, device=args.device).squeeze() if openloader is not None else None
-    print("X")
+    print("\u2713")
 
 
     if (fold:=args.folder_save_outputs) is not None:
