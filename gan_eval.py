@@ -34,6 +34,7 @@ def load_args():
 
 def main():
     args = load_args()
+    print(args)
     
     # INSTANTIATE DISCRIMINATOR AND LOAD WEIGHTS
     netD = models.DiscriminatorFunnel(num_channels=args.input_channel_dim, base_width=args.base_width)
