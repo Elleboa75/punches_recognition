@@ -41,17 +41,17 @@ def main():
 
     print("...Discriminator loaded.")
 
-    print("...Getting datasets:", sep=" ")
+    print("...Getting datasets:", end=" ")
     # OBTAIN THE FEATURES AND DATALOADERS
     dataset_valid = datasets.get_dataset(args.validset_root, transforms=datasets.get_bare_transforms()) if args.validset_root is not None else None
     dataset_open = datasets.get_dataset(args.openset_root, transforms=datasets.get_bare_transforms()) if args.openset_root is not None else None
     print("X")    
 
     print("...Computing features")
-    print("\t\t Validation:", sep=" ")
+    print("\t\t Validation:", end=" ")
     valid_features = features.get_features(args.path_features_valid, args.force_feats_recalculation, dataset_valid, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if dataset_valid is not None else None
     print("X")
-    print("\t\t Open:", sep=" ")
+    print("\t\t Open:", end=" ")
     open_features = features.get_features(args.path_features_open, args.force_feats_recalculation, dataset_open, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if dataset_open is not None else None
     # train_features = features.get_features(args.path_features_train, False, None, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if args.path_features_train is not None else None
 
@@ -61,10 +61,10 @@ def main():
     
     # outs_train = testing.get_outputs(netD, trainloader).squeeze() if trainloader is not None else None
     print("...Evaluating discriminator")
-    print("\t\t Validation:", sep=" ")
+    print("\t\t Validation:", end=" ")
     outs_valid = testing.get_outputs(netD, validloader).squeeze() if validloader is not None else None
     print("X")
-    print("\t\t Open:", sep=" ")
+    print("\t\t Open:", end=" ")
     outs_open = testing.get_outputs(netD, openloader).squeeze() if openloader is not None else None
     print("X")
 
