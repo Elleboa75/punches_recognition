@@ -33,34 +33,48 @@ def load_args():
 
 def main():
     args = load_args()
-    print(args)
-
+    
     # INSTANTIATE DISCRIMINATOR AND LOAD WEIGHTS
     netD = models.DiscriminatorFunnel(num_channels=args.input_channel_dim, base_width=args.base_width)
     x = torch.load(args.discriminator_path)
     netD.load_state_dict(torch.load(args.discriminator_path))
 
+    print("...Discriminator loaded.")
+
+    print("...Getting datasets:", sep=" ")
     # OBTAIN THE FEATURES AND DATALOADERS
     dataset_valid = datasets.get_dataset(args.validset_root, transforms=datasets.get_bare_transforms()) if args.validset_root is not None else None
     dataset_open = datasets.get_dataset(args.openset_root, transforms=datasets.get_bare_transforms()) if args.openset_root is not None else None
-    valid_features = features.get_features(args.path_features_valid, args.force_feats_recalculation, dataset_valid, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if dataset_valid is not None else None
-    open_features = features.get_features(args.path_features_open, args.force_feats_recalculation, dataset_open, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if dataset_open is not None else None
-    train_features = features.get_features(args.path_features_train, False, None, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if args.path_features_train is not None else None
+    print("X")    
 
-    trainloader = DataLoader(datasets.BasicDataset(train_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if train_features is not None else None
+    print("...Computing features")
+    print("\t\t Validation:", sep=" ")
+    valid_features = features.get_features(args.path_features_valid, args.force_feats_recalculation, dataset_valid, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if dataset_valid is not None else None
+    print("X")
+    print("\t\t Open:", sep=" ")
+    open_features = features.get_features(args.path_features_open, args.force_feats_recalculation, dataset_open, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if dataset_open is not None else None
+    # train_features = features.get_features(args.path_features_train, False, None, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if args.path_features_train is not None else None
+
+    # trainloader = DataLoader(datasets.BasicDataset(train_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if train_features is not None else None
     validloader = DataLoader(datasets.BasicDataset(valid_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if valid_features is not None else None
     openloader = DataLoader(datasets.BasicDataset(open_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if open_features is not None else None
     
-    outs_train = testing.get_outputs(netD, trainloader).squeeze() if trainloader is not None else None
+    # outs_train = testing.get_outputs(netD, trainloader).squeeze() if trainloader is not None else None
+    print("...Evaluating discriminator")
+    print("\t\t Validation:", sep=" ")
     outs_valid = testing.get_outputs(netD, validloader).squeeze() if validloader is not None else None
+    print("X")
+    print("\t\t Open:", sep=" ")
     outs_open = testing.get_outputs(netD, openloader).squeeze() if openloader is not None else None
+    print("X")
 
 
     if (fold:=args.folder_save_outputs) is not None:
         os.makedirs(fold, exist_ok=True)
-        torch.save(outs_train, os.path.join(fold, "train.pt"))
+        # torch.save(outs_train, os.path.join(fold, "train.pt"))
         torch.save(outs_valid, os.path.join(fold, "validouts_valid.pt"))
         torch.save(outs_open, os.path.join(fold, "open.pt"))
+        print(f"Outputs saved in {args.folder_save_outputs}")
 
     if (fold:=os.path.dirname(args.save_hist_path)) != "":
         os.makedirs(fold, exist_ok=True)
