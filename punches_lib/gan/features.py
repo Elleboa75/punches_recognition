@@ -3,7 +3,7 @@ import torch
 import torchvision
 from torch.utils.data import DataLoader
 import os
-
+from .. import utils
 
 
 def get_backbone(class_, params_path:str, **kwargs):
@@ -26,7 +26,7 @@ def get_backbone(class_, params_path:str, **kwargs):
     net.load_state_dict(torch.load(params_path))
     return net
 
-def extract_features(backbone:torch.nn.Module, feats_module:str, dataset:torch.utils.data.Dataset, batch_size:int, ites:int=1, **kwargs):
+def extract_features(backbone:torch.nn.Module, feats_module:str, dataset:torch.utils.data.Dataset, batch_size:int, ites:int=1, device=None, **kwargs):
     '''
     Get the features from the specified dataset.
 
@@ -37,12 +37,17 @@ def extract_features(backbone:torch.nn.Module, feats_module:str, dataset:torch.u
     dataset: a torch.utils.data.Dataset containing the datapoints to extract features out of
     batch_size: the batch size used for evaluating the features. None equates to len(dataset)
     ites: number of iterations to repeat the feature extraction. Useful for data augmentation if dataset has some probabilistic transforms.
+    device: the device on which to evaluate the features. If None, the features will be evaluated on the GPU if CUDA is available.
     kwargs: possible args to pass on to DataLoader
 
     Returns
     ------------
     an instantiated pretrained model ready for extracting the features
     '''
+
+    if device is None:
+        device = utils.use_cuda_if_possible()
+
     features = []
     def feature_extractor(module, input_, output):
         features.append(output.cpu())
@@ -50,7 +55,7 @@ def extract_features(backbone:torch.nn.Module, feats_module:str, dataset:torch.u
 
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False, **kwargs)
     backbone.eval()
-    backbone.cuda()
+    backbone.to(device)
     for i in range(ites):
         print(f"Processing iteration {i+1}/{ites}...")
         with torch.no_grad():
@@ -58,11 +63,11 @@ def extract_features(backbone:torch.nn.Module, feats_module:str, dataset:torch.u
                 print(f"Processing batch {j+1}/{len(loader)}")
                 if isinstance(data, (tuple, list)):
                     data = data[0] #disregard labels in this process
-                data = data.cuda()
+                data = data.to(device)
                 _ = backbone(data)
     return torch.cat(features, dim=0)
 
-def get_features(path_features:str, force_calculation:bool, dataset:str, backbone_class, backbone_params:str, batch_size:int, num_classes:int=None):
+def get_features(path_features:str, force_calculation:bool, dataset:str, backbone_class, backbone_params:str, batch_size:int, num_classes:int=None, device=None):
     '''
     Loads or calculates features produced by the backbone by evaluating the images contained in a specified dataset.
 
@@ -75,6 +80,7 @@ def get_features(path_features:str, force_calculation:bool, dataset:str, backbon
     backbone_params: the path to the parameters of the backbone to load.
     batch_size: the batch size which will be used for passing the raw data to the backbone to produce the features.
     num_classes: the number of classes in the dataset. If None, it will be inferred from the dataset.
+    device: the device on which to evaluate the features. If None, the features will be evaluated on the GPU if CUDA is available.
 
     Returns:
     -------------
@@ -86,7 +92,7 @@ def get_features(path_features:str, force_calculation:bool, dataset:str, backbon
     else:
         num_classes = num_classes if num_classes is not None else len(dataset.classes)
         backbone = get_backbone(backbone_class, backbone_params, num_classes=num_classes)
-        features = extract_features(backbone, "layer4", dataset, batch_size)
+        features = extract_features(backbone, "layer4", dataset, batch_size, device=device)
         if (save_path:=path_features) is not None:
             os.makedirs(os.path.dirname(save_path), exist_ok=True)
             torch.save(features, save_path)

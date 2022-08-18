@@ -1,15 +1,20 @@
+from typing import Union
 import torch
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
+from .. import utils
 
 def get_outputs(
     discriminator: torch.nn.Module,
-    testloader:DataLoader
+    testloader:DataLoader,
+    device:Union[torch.device,str],
 ):
+    if device is None:
+        device = utils.use_cuda_if_possible()
     outputs = []
-    device = next(discriminator.parameters()).device
+    discriminator.to(device)
     discriminator.eval()
     with torch.no_grad():
         for data in testloader:
