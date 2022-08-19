@@ -22,6 +22,7 @@ def load_args():
     parser.add_argument("--path_features_train", type=str, default=None, help="Path from where the features for training the GAN will be loaded from. If None, features will be calculated at runtime but not saved. Features must be loaded and cannot be recalculated.")
     parser.add_argument("--path_features_valid", type=str, default=None, help="Path from where the features for the validation dataset will be loaded from. If None, features will be calculated at runtime but not saved. For recalculating the features and saving them in this path, toggle the switch --force_feats_recalculation (default: None).")
     parser.add_argument("--path_features_open", type=str, default=None, help="Path from where the features for the open data dataset will be loaded from. If None, features will be calculated at runtime but not saved. For recalculating the features and saving them in this path, toggle the switch --force_feats_recalculation (default: None).")
+    parser.add_argument("--path_features_crops", type=str, default=None, help="")
     parser.add_argument("--force_feats_recalculation", action="store_true", default=False, help="Force recalculation of the features even if --backbone_network_feats is passed")
     parser.add_argument("--backbone_network_feats", type=str, choices=["resnet18", "resnet34", "resnet50", None], default=None, help="Backbone network for obtaining the features (default: None).")
     parser.add_argument("--backbone_network_params", type=str, default=None, help="Path to the state_dict containing the parameters for the pretrained backbone (default: None)")
@@ -75,6 +76,7 @@ def main():
     if args.verbose:
         print("\u2713")
 
+    crops_features = features.get_features(args.path_features_crops, args.force_feats_recalculation, None, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device) if args.path_features_crops is not None else None
     rand_features = None
     if args.do_random:
         rand_features = features.get_features(None, True, dataset_random, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device)
@@ -85,6 +87,7 @@ def main():
     # trainloader = DataLoader(datasets.BasicDataset(train_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if train_features is not None else None
     validloader = DataLoader(datasets.BasicDataset(valid_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if valid_features is not None else None
     openloader = DataLoader(datasets.BasicDataset(open_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if open_features is not None else None
+    cropsloader = DataLoader(datasets.BasicDataset(crops_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if crops_features is not None else None
     if args.do_random:
         randloader = DataLoader(datasets.BasicDataset(rand_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if rand_features is not None else None
     
@@ -99,6 +102,7 @@ def main():
     outs_open = testing.get_outputs(netD, openloader, device=args.device).squeeze() if openloader is not None else None
     if args.verbose:
         print("\u2713")
+    outs_crops = testing.get_outputs(netD, cropsloader, device=args.device).squeeze() if cropsloader is not None else None
     outs_rand = None
     if args.do_random:
         outs_rand = testing.get_outputs(netD, randloader, device=args.device).squeeze() if randloader is not None else None
@@ -114,7 +118,7 @@ def main():
 
     if (fold:=os.path.dirname(args.save_hist_path)) != "":
         os.makedirs(fold, exist_ok=True)
-    testing.plot_hist(outputs_ood=outs_open, outputs_test=outs_valid, outputs_random=outs_rand, save_path=args.save_hist_path, title="Discriminator validation")
+    testing.plot_hist(outputs_ood=outs_open, outputs_test=outs_valid, outputs_random=outs_rand, outputs_crops=outs_crops, save_path=args.save_hist_path, title="Discriminator validation")
 
     perf = testing.get_performance(outs_valid, outs_open, increment=args.by)
     if (fold:=os.path.dirname(args.save_performance_path)) != "":
