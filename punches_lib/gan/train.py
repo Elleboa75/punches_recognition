@@ -122,7 +122,7 @@ def train(
     for epoch in range(epochs):
         for i, (data, ooddata) in enumerate(zip(trainloader, oodloader)):
             data = data.to(device)
-            noise = torch.randn(data.shape[0], latent_dim, 8, 8, device=device)
+            noise = torch.randn(data.shape[0], latent_dim, spatial_dim_noise, spatial_dim_noise, device=device)
             # Discriminator
             error_discrim_real, D_x = discriminator_real_data(discriminator, data, label_smoothing_factor, loss_fn)
             error_discrim_fake, D_G_z1, fake_data = discriminator_fake_data(discriminator, generator, noise, label_smoothing_factor, loss_fn)    
