@@ -57,6 +57,55 @@ class Generator(nn.Module):
     def forward(self, input):
         return self.main(input)
 
+
+class GeneratorStretch(nn.Module):
+    '''
+    Basic architecture for the generator. It is a ConvNet going from the latent dimension to the input space.
+    The input to the generator is a vector in the specified latent dimension treated as a 3D tensor of 1x1 spatial dimension and latent_dim channels.
+
+    Constructor parameters
+    -------------
+    latent_dim: the dimensione of the latent space whose vectors are input to this network
+    base_width: the base width of each convolutional layer. Starting from the initial layer, the outputs have all a number of channels multiple of base_width.
+    num_channels: number of channels of the output of the model
+    '''
+    def __init__(self, latent_dim:int=100, base_width:int=64, num_channels:int=512):
+        super(GeneratorStretch, self).__init__()
+        self.latent_dim = latent_dim
+        self.base_width = base_width
+        self.num_channels = num_channels
+        
+        self.main = nn.Sequential(
+            # input is Z, going into a convolution
+            nn.ConvTranspose2d(self.latent_dim, self.base_width * 8, kernel_size=3, bias=False),
+            # nn.Conv2d(self.latent_dim, self.base_width * 8, 1, 1, 0, bias=False),
+            nn.BatchNorm2d(self.base_width * 8),
+            nn.ReLU(True),
+            # state size. (self.base_width*8) x 4 x 4
+            nn.ConvTranspose2d(self.base_width * 8, self.base_width * 4, kernel_size=3, bias=False),
+            # nn.Conv2d(self.base_width * 8, self.base_width * 4, 1, 1, 0, bias=False),
+            nn.BatchNorm2d(self.base_width * 4),
+            nn.ReLU(True),
+            # state size. (self.base_width*4) x 8 x 8
+            nn.ConvTranspose2d(self.base_width * 4, self.base_width * 2, kernel_size=1, bias=False),
+            # nn.Conv2d( self.base_width * 4, self.base_width * 2, 1, 1, 0, bias=False),
+            nn.BatchNorm2d(self.base_width * 2),
+            nn.ReLU(True),
+            # state size. (self.base_width*2) x 16 x 16
+            nn.ConvTranspose2d(self.base_width * 2, self.base_width*4, kernel_size=3, bias=False),
+            # nn.Conv2d( self.base_width * 2, self.base_width*4, 1, 1, 0, bias=False),
+            nn.BatchNorm2d(self.base_width*4),
+            nn.ReLU(True),
+            # state size. (self.base_width) x 32 x 32
+            nn.ConvTranspose2d(self.base_width*4, self.num_channels, kernel_size=2, bias=True),
+            # nn.Conv2d( self.base_width*4, self.num_channels, 1, 1, 0, bias=True),
+            #nn.Tanh()
+            # state size. (self.num_channels) x 64 x 64
+        )
+
+    def forward(self, input):
+        return self.main(input)
+
 class DiscriminatorFunnel(nn.Module):
     '''
     A binary classifier taking as input a datapoint. It classifies whether the datapoint is real or synthetic. It is a CNN.

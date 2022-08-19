@@ -103,7 +103,8 @@ def train(
     oodloader:DataLoader=None,
     lambda_O:float=0.0,
     lambda_G:float=1.0,
-    save_path:str=None
+    save_path:str=None,
+    spatial_dim_noise:int=8,
 ):
     discriminator.train()
     discriminator.to(device)
