@@ -88,7 +88,7 @@ def main():
         optimizer_d=optimizerD, 
         trainloader=trainloader,
         epochs=args.epochs,
-        device="cuda",
+        device=args.device,
         label_smoothing_factor=args.label_smoothing,
         loss_fn=torch.nn.BCELoss(),
         latent_dim=args.latent_dim,
