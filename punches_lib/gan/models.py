@@ -118,7 +118,7 @@ class GeneratorStretchSmall(nn.Module):
     num_channels: number of channels of the output of the model
     '''
     def __init__(self, latent_dim:int=100, base_width:int=64, num_channels:int=512):
-        super(GeneratorStretch, self).__init__()
+        super().__init__()
         self.latent_dim = latent_dim
         self.base_width = base_width
         self.num_channels = num_channels
