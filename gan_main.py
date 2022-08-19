@@ -16,7 +16,7 @@ def load_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--epochs", type=int, default=300, help="Number of epochs for the GAN training (default: 300).")
     parser.add_argument("--batch_size", type=int, default=128, help="Batch size for training (default: 128).") 
-    parser.add_argument("--generator_type", type=str, default="classic", choices=["classic", "stretch"], help="Type of generator to use. 'classic' leaves the spatial dimension untouched, while 'stretch' increases the spatial dimensions from 1 to 8 (default: classic).")
+    parser.add_argument("--generator_type", type=str, default="classic", choices=["classic", "stretch", "stretch_small"], help="Type of generator to use. 'classic' leaves the spatial dimension untouched, while 'stretch' increases the spatial dimensions from 1 to 8 (default: classic).")
     parser.add_argument("--latent_dim", type=int, default=100, help="Dimension of the latent space for the generator (default: 100).")
     parser.add_argument("--base_width", type=int, default=64, help="Base width (i.e., minimum number of output channels) per hidden conv layer in discriminator and generator (default: 64).")
     parser.add_argument("--input_channel_dim", type=int, default=512, help="Number of channels of the input data (the features representation of the images --- default: 512).")
@@ -50,6 +50,9 @@ def main():
         spatial_dim_noise = 8
     elif args.generator_type == "stretch":
         generator_class = models.GeneratorStretch
+        spatial_dim_noise = 1
+    elif args.generator_type == "stretch_small":
+        generator_class = models.GeneratorStretchSmall
         spatial_dim_noise = 1
     else:
         raise ValueError(f"Invalid generator_type {args.generator_type}")
