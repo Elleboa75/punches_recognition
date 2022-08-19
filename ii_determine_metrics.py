@@ -49,7 +49,7 @@ def main():
     print("Best W")
     print(eval_results.nlargest(1, "W_sens_spec"))
     print("Best WA")
-    print(eval_results.nlargest(1, "W_Asens_spec"))
+    print(eval_results.nlargest(1, "WA_sens_spec"))
     eval_results.to_csv(args.save_path)
     
 
