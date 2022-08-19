@@ -134,6 +134,10 @@ def main():
     perf.to_csv(args.save_performance_path)
 
     print("Best\n", perf.nlargest(1, "W"))
+
+    if additional_outputs is not None:
+        print("Best (additional)\n", perf.nlargest(1, "AW"))
+
     
 if __name__ == "__main__":
     main()
