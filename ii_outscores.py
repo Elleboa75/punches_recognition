@@ -46,7 +46,7 @@ def main():
     cropsloader = datasets.get_dataloader(args.root_crops, args.batch_size, shuffle=False, transforms=datasets.get_bare_transforms())
     oodloader = datasets.get_dataloader(args.root_ood, args.batch_size, shuffle=False, transforms=datasets.get_bare_transforms())
     if args.do_random:
-        randloader = torch.utils.data.DataLoader(datasets.BasicDataset(torch.randn((500, 3, 256, 256)), transform=None))
+        randloader = torch.utils.data.DataLoader(datasets.BasicDatasetLabels(torch.randn((500, 3, 256, 256)), transform=None))
 
     outlier_scores_valid = eval_ii.eval_outlier_scores(validloader, net, mean_embeddings, device=args.device)
     torch.save(outlier_scores_valid, f"{args.base_path}_valid.pth")
