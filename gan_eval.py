@@ -114,7 +114,7 @@ def main():
 
     if (fold:=os.path.dirname(args.save_hist_path)) != "":
         os.makedirs(fold, exist_ok=True)
-    testing.plot_hist(outputs_random=outs_open, outputs_ood=outs_valid, outputs_random=outs_rand, save_path=args.save_hist_path, title="Discriminator validation")
+    testing.plot_hist(outputs_ood=outs_open, outputs_test=outs_valid, outputs_random=outs_rand, save_path=args.save_hist_path, title="Discriminator validation")
 
     perf = testing.get_performance(outs_valid, outs_open, increment=args.by)
     if (fold:=os.path.dirname(args.save_performance_path)) != "":
