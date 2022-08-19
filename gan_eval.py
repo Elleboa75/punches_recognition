@@ -5,7 +5,7 @@ from torch import nn
 import argparse
 from typing import Union
 
-from punches_lib.gan import models, features,  testing, utils
+from punches_lib.gan import models, models_experimental as me, features,  testing, utils
 from punches_lib import datasets
 
 
@@ -13,6 +13,7 @@ from punches_lib import datasets
 def load_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--discriminator_path", type=str, required=True, help="Path where the params for the discriminator are stored.")
+    parser.add_argument("--discriminator_type", type=str, default="classic", choices=["classic", "experimental"], help="Type of discriminator to use. Options: funnel, conv, dense.")
     parser.add_argument("--input_channel_dim", type=int, default=512, help="Number of channels of the input data (the features representation of the images --- default: 512).")
     parser.add_argument("--base_width", type=int, default=64, help="Base width (i.e., minimum number of output channels) per hidden conv layer in discriminator and generator (default: 64).")
     parser.add_argument("--batch_size", type=int, default=128, help="Batch size for evaluating the features (default: 128).")
@@ -38,8 +39,12 @@ def main():
     args = load_args()
     
     # INSTANTIATE DISCRIMINATOR AND LOAD WEIGHTS
-    netD = models.DiscriminatorFunnel(num_channels=args.input_channel_dim, base_width=args.base_width)
-    x = torch.load(args.discriminator_path)
+    if args.discriminator_type == "classic":
+        netD = models.DiscriminatorFunnel(num_channels=args.input_channel_dim, base_width=args.base_width)
+    elif args.discriminator_type == "experimental":
+        netD = me.Discriminator(num_channels=args.input_channel_dim, base_width=args.base_width)
+    else:
+        raise ValueError("Invalid discriminator type: {}".format(args.discriminator_type))
     netD.load_state_dict(torch.load(args.discriminator_path))
 
     if args.verbose:
@@ -55,12 +60,14 @@ def main():
         print("...Computing features")
         print("\t\t Validation:", end=" ")
     valid_features = features.get_features(args.path_features_valid, args.force_feats_recalculation, dataset_valid, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device) if dataset_valid is not None else None
-    valid_features = torch.nn.functional.interpolate(valid_features, scale_factor=args.rescale_factor, mode='bilinear')
+    if args.rescale_factor != 1.0:
+        valid_features = torch.nn.functional.interpolate(valid_features, scale_factor=args.rescale_factor, mode='bilinear')
     if args.verbose:
         print("\u2713")
         print("\t\t Open:", end=" ")
     open_features = features.get_features(args.path_features_open, args.force_feats_recalculation, dataset_open, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device) if dataset_open is not None else None
-    open_features = torch.nn.functional.interpolate(open_features, scale_factor=args.rescale_factor, mode='bilinear')
+    if args.rescale_factor != 1.0:
+        open_features = torch.nn.functional.interpolate(open_features, scale_factor=args.rescale_factor, mode='bilinear')
     if args.verbose:
         print("\u2713")
 
