@@ -34,6 +34,7 @@ def load_args():
     parser.add_argument("--force_feats_recalculation", action="store_true", default=False, help="Force recalculation of the features even if --backbone_network_feats is passed")
     parser.add_argument("--save_figure_path", type=str, default=None, help="Path where the figure for the losses (default: None).")
     parser.add_argument("--device", type=str, default="cuda", help="Device to use for training (default: cuda).")
+    parser.add_argument("--rescale_factor", type=float, default=1.0, help="Rescale factor for the embeddings (default: 1.0).")
     args = parser.parse_args()
     return args
 
@@ -93,7 +94,8 @@ def main():
         loss_fn=torch.nn.BCELoss(),
         latent_dim=args.latent_dim,
         save_path=params_savefile,
-        spatial_dim_noise=spatial_dim_noise
+        spatial_dim_noise=spatial_dim_noise,
+        rescale_factor=args.rescale_factor,
     )
 
     if args.save_figure_path is not None:

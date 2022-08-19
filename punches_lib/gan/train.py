@@ -105,6 +105,7 @@ def train(
     lambda_G:float=1.0,
     save_path:str=None,
     spatial_dim_noise:int=8,
+    rescale_factor:float=1.0
 ):
     discriminator.train()
     discriminator.to(device)
@@ -119,9 +120,13 @@ def train(
     if ite_print is None:
         ite_print = len(trainloader)
 
+
+
     for epoch in range(epochs):
         for i, (data, ooddata) in enumerate(zip(trainloader, oodloader)):
             data = data.to(device)
+            if rescale_factor > 1:
+                torch.nn.functional.interpolate(data, scale_factor=rescale_factor, mode='bilinear')
             noise = torch.randn(data.shape[0], latent_dim, spatial_dim_noise, spatial_dim_noise, device=device)
             # Discriminator
             error_discrim_real, D_x = discriminator_real_data(discriminator, data, label_smoothing_factor, loss_fn)

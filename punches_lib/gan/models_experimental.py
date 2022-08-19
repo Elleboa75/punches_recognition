@@ -39,7 +39,6 @@ class Discriminator(nn.Module):
         self.num_channels = num_channels
         self.base_width = base_width
         self.main = nn.Sequential(
-            nn.MaxPool2d(4, 4),
             nn.Conv2d(self.num_channels, self.base_width*8, 1, 1, 0, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Conv2d(self.base_width*8, self.base_width*4, 1, 1, 0, bias=False),
