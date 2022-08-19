@@ -127,7 +127,7 @@ class GeneratorStretchSmall(nn.Module):
             # input is Z, going into a convolution
             nn.ConvTranspose2d(self.latent_dim, self.base_width * 2, kernel_size=3, bias=False),
             # nn.Conv2d(self.latent_dim, self.base_width * 8, 1, 1, 0, bias=False),
-            nn.BatchNorm2d(self.base_width * 8),
+            nn.BatchNorm2d(self.base_width * 2),
             nn.ReLU(True),
             # state size. (self.base_width*8) x 4 x 4
             nn.ConvTranspose2d(self.base_width * 2, self.base_width * 4, kernel_size=3, bias=False),
@@ -137,8 +137,6 @@ class GeneratorStretchSmall(nn.Module):
             # state size. (self.base_width*4) x 8 x 8
             nn.ConvTranspose2d(self.base_width * 4, self.base_width * 8, kernel_size=4, bias=False),
             # nn.Conv2d( self.base_width * 4, self.base_width * 2, 1, 1, 0, bias=False),
-            nn.BatchNorm2d(self.base_width * 2),
-            nn.ReLU(True),
         )
 
     def forward(self, input):
