@@ -28,6 +28,7 @@ def load_args():
     parser.add_argument("--save_hist_path", type=str, default="hist.png", help="Path where to save the histogram (default: hist.png).")
     parser.add_argument("--by", type=float, default=0.05, help="Calculation of performance: increment used for swiping the axis 0-1 in search of a threshold (default: 0.05).")
     parser.add_argument("--save_performance_path", type=str, default="performance.csv", help="Path where to save the performance as a CSV file (default: performance.csv).")
+    parser.add_argument("--rescale_factor", type=float, default=1.0, help="Rescale factor for the embeddings (default: 1.0).")
     parser.add_argument("--device", type=str, default=None, help="Device to use for the computations (default: None -> use CUDA if available).")
     parser.add_argument("--verbose", action="store_true", default=False, help="Verbose mode (default: False).")
     args = parser.parse_args()
@@ -54,10 +55,12 @@ def main():
         print("...Computing features")
         print("\t\t Validation:", end=" ")
     valid_features = features.get_features(args.path_features_valid, args.force_feats_recalculation, dataset_valid, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device) if dataset_valid is not None else None
+    valid_features = torch.nn.functional.interpolate(valid_features, scale_factor=args.rescale_factor, mode='bilinear')
     if args.verbose:
         print("\u2713")
         print("\t\t Open:", end=" ")
     open_features = features.get_features(args.path_features_open, args.force_feats_recalculation, dataset_open, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device) if dataset_open is not None else None
+    open_features = torch.nn.functional.interpolate(open_features, scale_factor=args.rescale_factor, mode='bilinear')
     if args.verbose:
         print("\u2713")
 
