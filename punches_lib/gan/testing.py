@@ -26,7 +26,7 @@ def plot_hist(
     outputs_ood:torch.Tensor,
     outputs_test:torch.Tensor,
     # outputs_crops:torch.Tensor,
-    # outputs_random:torch.Tensor,
+    outputs_random:torch.Tensor,
     save_path:str,
     title:str=""
 ):  
@@ -40,8 +40,8 @@ def plot_hist(
         plt.hist(outputs_test.detach().cpu().numpy(), label="validation data", density=True, alpha=0.5)
     # if outputs_crops is not None:
     #     plt.hist(outputs_crops.detach().cpu().numpy(), label="random crops", density=True, alpha=0.5)
-    # if outputs_random is not None:
-    #     plt.hist(outputs_random.detach().cpu().numpy(), label="random data", density=True, alpha=0.5)
+    if outputs_random is not None:
+        plt.hist(outputs_random.detach().cpu().numpy(), label="random data", density=True, alpha=0.5)
     plt.legend(loc='upper right')
     plt.title(title)
 

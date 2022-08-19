@@ -32,6 +32,7 @@ def load_args():
     parser.add_argument("--rescale_factor", type=float, default=1.0, help="Rescale factor for the embeddings (default: 1.0).")
     parser.add_argument("--device", type=str, default=None, help="Device to use for the computations (default: None -> use CUDA if available).")
     parser.add_argument("--verbose", action="store_true", default=False, help="Verbose mode (default: False).")
+    parser.add_argument("--do_random", action="store_true", default=False, help="Do eval with random sample (default: False).")
     args = parser.parse_args()
     return args
 
@@ -54,6 +55,9 @@ def main():
     # OBTAIN THE FEATURES AND DATALOADERS
     dataset_valid = datasets.get_dataset(args.validset_root, transforms=datasets.get_bare_transforms()) if args.validset_root is not None else None
     dataset_open = datasets.get_dataset(args.openset_root, transforms=datasets.get_bare_transforms()) if args.openset_root is not None else None
+    if args.do_random:
+        dataset_random = datasets.BasicDataset(torch.randn((500, 3, 256, 256)))
+    
     if args.verbose:
         print("\u2713")    
 
@@ -71,12 +75,18 @@ def main():
     if args.verbose:
         print("\u2713")
 
+    rand_features = None
+    if args.do_random:
+        rand_features = features.get_features(None, True, dataset_random, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19, device=args.device)
+
     
     # train_features = features.get_features(args.path_features_train, False, None, args.backbone_network_feats, args.backbone_network_params, args.batch_size, num_classes=19) if args.path_features_train is not None else None
 
     # trainloader = DataLoader(datasets.BasicDataset(train_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if train_features is not None else None
     validloader = DataLoader(datasets.BasicDataset(valid_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if valid_features is not None else None
     openloader = DataLoader(datasets.BasicDataset(open_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if open_features is not None else None
+    if args.do_random:
+        randloader = DataLoader(datasets.BasicDataset(rand_features), batch_size=args.batch_size, shuffle=False, num_workers=4) if rand_features is not None else None
     
     # outs_train = testing.get_outputs(netD, trainloader).squeeze() if trainloader is not None else None
     if args.verbose:
@@ -89,6 +99,9 @@ def main():
     outs_open = testing.get_outputs(netD, openloader, device=args.device).squeeze() if openloader is not None else None
     if args.verbose:
         print("\u2713")
+    outs_rand = None
+    if args.do_random:
+        outs_rand = testing.get_outputs(netD, randloader, device=args.device).squeeze() if randloader is not None else None
 
     
 
@@ -101,7 +114,7 @@ def main():
 
     if (fold:=os.path.dirname(args.save_hist_path)) != "":
         os.makedirs(fold, exist_ok=True)
-    testing.plot_hist(outs_open, outs_valid, args.save_hist_path, "Discriminator validation")
+    testing.plot_hist(outputs_random=outs_open, outputs_ood=outs_valid, outputs_random=outs_rand, save_path=args.save_hist_path, title="Discriminator validation")
 
     perf = testing.get_performance(outs_valid, outs_open, increment=args.by)
     if (fold:=os.path.dirname(args.save_performance_path)) != "":

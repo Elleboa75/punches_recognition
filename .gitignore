@@ -1,6 +1,7 @@
 # results and data folders
 data/
 models/
+tries/
 
 # Vscode stuff
 .vscode
