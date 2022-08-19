@@ -30,7 +30,7 @@ def main():
     all_ood_scores = torch.cat((scores_crops, scores_ood, scores_random))
 
 
-    all_scores = torch.cat((scores_valid, scores_crops, scores_ood))
+    all_scores = torch.cat((scores_random, scores_crops, scores_ood))
     max_score = all_scores.max().item()
 
     num_steps = int(max_score / args.by) + 1
