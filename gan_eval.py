@@ -120,7 +120,15 @@ def main():
         os.makedirs(fold, exist_ok=True)
     testing.plot_hist(outputs_ood=outs_open, outputs_test=outs_valid, outputs_random=outs_rand, outputs_crops=outs_crops, save_path=args.save_hist_path, title="Discriminator validation")
 
-    perf = testing.get_performance(outs_valid, outs_open, increment=args.by)
+    additional_outputs = None
+    if outs_rand is not None and outs_crops is not None:
+        additional_outputs = torch.cat((outs_rand, outs_crops), dim=0)
+    elif outs_rand is not None:
+        additional_outputs = outs_rand
+    elif outs_crops is not None:
+        additional_outputs = outs_crops
+
+    perf = testing.get_performance(outs_valid, outs_open, increment=args.by, additional_outputs=additional_outputs) if outs_valid is not None else None
     if (fold:=os.path.dirname(args.save_performance_path)) != "":
         os.makedirs(fold, exist_ok=True)
     perf.to_csv(args.save_performance_path)

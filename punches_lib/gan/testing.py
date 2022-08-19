@@ -52,9 +52,12 @@ def plot_hist(
 def get_performance(
     outputs_valid:torch.Tensor,
     outputs_ood:torch.Tensor,
+    additional_outputs:torch.Tensor=None,
     # outputs_randcrops:torch.Tensor,
     increment:float=.05
 ) -> pd.DataFrame:
+    if additional_outputs is not None:
+        outputs_add = torch.cat((outputs_ood, additional_outputs))
     performance = {"threshold": [], "valid": [], "ood": [], "W": []}
     for i in torch.linspace(increment, 1.0 - increment, int(1.0 / increment)-1):
         performance["threshold"].append(i.item())
@@ -63,6 +66,10 @@ def get_performance(
         specificity = len(outputs_ood[outputs_ood<=i])/len(outputs_ood)
         performance["ood"].append(specificity)
         performance["W"].append(5*sensitivity*specificity/(4*sensitivity+specificity))
+        if additional_outputs is not None:
+            specificity_A = len(outputs_add[outputs_add<=i])/len(outputs_add)
+            performance["Aood"].append(specificity_A)
+            performance["AW"].append(5*sensitivity*specificity_A/(4*sensitivity+specificity_A))
         # performance["randcrops"].append(len(outputs_randcrops[outputs_randcrops<=i])/len(outputs_randcrops))
     return pd.DataFrame(performance)
         
