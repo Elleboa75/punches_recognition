@@ -33,6 +33,7 @@ def load_args():
     parser.add_argument("--trainset_root", type=str, default=None, help="root where the data are stored (default: None).")
     parser.add_argument("--force_feats_recalculation", action="store_true", default=False, help="Force recalculation of the features even if --backbone_network_feats is passed")
     parser.add_argument("--save_figure_path", type=str, default=None, help="Path where the figure for the losses (default: None).")
+    parser.add_argument("--device", type=str, default="cuda", help="Device to use for training (default: cuda).")
     args = parser.parse_args()
     return args
 
