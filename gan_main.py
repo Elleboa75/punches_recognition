@@ -8,7 +8,7 @@ from torch import nn
 import argparse
 from typing import Union
 
-from punches_lib.gan import models, features, train, utils
+from punches_lib.gan import models, features, train, utils, models_experimental as me
 from punches_lib import datasets
 
 
@@ -16,7 +16,7 @@ def load_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--epochs", type=int, default=300, help="Number of epochs for the GAN training (default: 300).")
     parser.add_argument("--batch_size", type=int, default=128, help="Batch size for training (default: 128).") 
-    parser.add_argument("--generator_type", type=str, default="classic", choices=["classic", "stretch", "stretch_small", "stretch_super_small"], help="Type of generator to use. 'classic' leaves the spatial dimension untouched, while 'stretch' increases the spatial dimensions from 1 to 8 (default: classic).")
+    parser.add_argument("--generator_type", type=str, default="classic", choices=["classic", "stretch", "stretch_small", "stretch_super_small", "experimental"], help="Type of generator to use. 'classic' leaves the spatial dimension untouched, while 'stretch' increases the spatial dimensions from 1 to 8 (default: classic).")
     parser.add_argument("--latent_dim", type=int, default=100, help="Dimension of the latent space for the generator (default: 100).")
     parser.add_argument("--base_width", type=int, default=64, help="Base width (i.e., minimum number of output channels) per hidden conv layer in discriminator and generator (default: 64).")
     parser.add_argument("--input_channel_dim", type=int, default=512, help="Number of channels of the input data (the features representation of the images --- default: 512).")
@@ -45,6 +45,7 @@ def main():
     print(args)
 
     # INSTANTIATE THE MODELS
+    discriminator_class = models.DiscriminatorFunnel
     if args.generator_type == "classic":
         generator_class = models.Generator
         spatial_dim_noise = 8
@@ -57,11 +58,15 @@ def main():
     elif args.generator_type == "stretch_super_small":
         generator_class = models.GeneratorStretchSuperSmall
         spatial_dim_noise = 2
+    elif args.generator_type == "experimental":
+        generator_class = me.Generator
+        discriminator_class = me.Discriminator
+        spatial_dim_noise = 1
     else:
         raise ValueError(f"Invalid generator_type {args.generator_type}")
     netG = generator_class(latent_dim=args.latent_dim, base_width=args.base_width)
     netG.apply(models.weights_init)
-    netD = models.DiscriminatorFunnel(num_channels=args.input_channel_dim, base_width=args.base_width)
+    netD = discriminator_class(num_channels=args.input_channel_dim, base_width=args.base_width)
     netD.apply(models.weights_init)
 
     trainset = datasets.get_dataset(args.trainset_root, transforms=datasets.get_bare_transforms())
