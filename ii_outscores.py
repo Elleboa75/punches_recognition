@@ -24,6 +24,7 @@ def get_args():
     parser.add_argument("--root_train", type=str, default=None, help="root of training data, to use in case the mean embeddings are not provided (default: None).")
     parser.add_argument("--base_path", type=str, default="model/model_ii.pth", help="path to save the scores. _valid.pth and _crops.pth will be added to the filename (default: model/model.pth).")
     parser.add_argument("--calc_valid_accuracy", action="store_true", help="if set, will calculate the accuracy of the model on the validation set (default: False).")
+    parser.add_argument("--do_random", action="store_true", help="Do eval with random sample (default: False).")
     return parser.parse_args()
 
 def main():
@@ -44,6 +45,8 @@ def main():
     validloader = datasets.get_dataloader(args.root_valid, args.batch_size, shuffle=False, transforms=datasets.get_bare_transforms())
     cropsloader = datasets.get_dataloader(args.root_crops, args.batch_size, shuffle=False, transforms=datasets.get_bare_transforms())
     oodloader = datasets.get_dataloader(args.root_ood, args.batch_size, shuffle=False, transforms=datasets.get_bare_transforms())
+    if args.do_random:
+        randloader = torch.utils.data.DataLoader(datasets.BasicDataset(torch.randn((500, 3, 256, 256)), transform=None))
 
     outlier_scores_valid = eval_ii.eval_outlier_scores(validloader, net, mean_embeddings, device=args.device)
     torch.save(outlier_scores_valid, f"{args.base_path}_valid.pth")
@@ -53,6 +56,11 @@ def main():
 
     outlier_scores_ood = eval_ii.eval_outlier_scores(oodloader, net, mean_embeddings, device=args.device)
     torch.save(outlier_scores_ood, f"{args.base_path}_ood.pth")
+
+    if args.do_random:
+        outlier_scores_rand = eval_ii.eval_outlier_scores(randloader, net, mean_embeddings, device=args.device)
+        torch.save(outlier_scores_rand, f"{args.base_path}_rand.pth")
+
 
     if args.calc_valid_accuracy:
         eval_ii.test_model(net, validloader, device=args.device)
