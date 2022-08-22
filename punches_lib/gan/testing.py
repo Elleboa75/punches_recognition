@@ -15,7 +15,7 @@ def get_outputs(
         device = utils.use_cuda_if_possible()
     outputs = []
     discriminator.to(device)
-    discriminator.eval()
+    # discriminator.eval()
     with torch.no_grad():
         for data in testloader:
             outputs.append(discriminator(data.to(device)))
