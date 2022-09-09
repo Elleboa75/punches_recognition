@@ -44,7 +44,7 @@ def main():
     fig = plt.figure(figsize=(8,2.5))
     plt.hist(scores_valid.numpy(), bins=75, label="Validation dataset", alpha=0.5, density=True)
     #plt.hist(scores_crops.numpy(), bins=100, label="crops", alpha=0.5, density=True)
-    plt.hist(scores_ood.numpy(), bins=20, label="OOD training set", alpha=0.5, density=True)
+    plt.hist(scores_ood.numpy(), bins=30, label="OOD training set", alpha=0.5, density=True)
     if args.threshold is not None:
         plt.axvline(args.threshold, color="r", linestyle="--", label=f"threshold ({args.threshold:.4f})")
     if args.y_scale_log:
