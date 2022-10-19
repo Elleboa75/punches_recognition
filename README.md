@@ -5,7 +5,7 @@ This work is a proof of concept for applying automatic pattern recognition techn
 
 ## What is a punch?
 
-![imgs/punch.jpg]()
+![](imgs/punch.jpg)
 
 A punch is a decoration impressed with the usage of mechanical tools on the gold foil of a panel painting.
 This type of decoration was very popular in Tuscany in the 13th and 14th century.
@@ -36,7 +36,7 @@ Prerequisites:
 
 ### Dataset
 
-Link to the dataset to be provided soon.
+Download the dataset from [this link](https://drive.google.com/drive/folders/1-dL-DTkdN1FTt-nBYEqgAScSZsp-_8jX?usp=sharing).
 
 ### Training
 
