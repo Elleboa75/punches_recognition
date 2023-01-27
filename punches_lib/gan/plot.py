@@ -1,5 +1,5 @@
 import matplotlib.pylab as plt
-from utils.eval_funcs import *
+from punches_lib.gan import eval_funcs
 
 
 def plot_losses(G_losses, D_losses, modelFlag, xlabel='Iterations', ylabel='Loss'):
@@ -15,7 +15,7 @@ def plot_losses(G_losses, D_losses, modelFlag, xlabel='Iterations', ylabel='Loss
 
 
 def plot_roc_curve(outputs_open, outputs_close, modelFlag, xlabel='False Positive Rate', ylabel='True Positive Rate'):
-    roc_score, roc_to_plot = evaluate_openset(outputs_open, outputs_close)
+    roc_score, roc_to_plot = eval_funcs.evaluate_openset(outputs_open, outputs_close)
     plt.plot(roc_to_plot['fp'], roc_to_plot['tp'])
     plt.grid('on')
     plt.xlabel(xlabel)

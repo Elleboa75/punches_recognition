@@ -93,13 +93,13 @@ def train_model(num_epochs, dataloader, netG, netD, real_label, fake_label, opti
                 img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
 
             iters += 1
+        if epoch > 850:
+          cur_model_wts = copy.deepcopy(netG.state_dict())
+          path_to_save_paramOnly = os.path.join(save_dir, 'epoch-{}.GNet'.format(epoch + 1))
+          torch.save(cur_model_wts, path_to_save_paramOnly)
 
-        cur_model_wts = copy.deepcopy(netG.state_dict())
-        path_to_save_paramOnly = os.path.join(save_dir, 'epoch-{}.GNet'.format(epoch + 1))
-        torch.save(cur_model_wts, path_to_save_paramOnly)
-
-        cur_model_wts = copy.deepcopy(netD.state_dict())
-        path_to_save_paramOnly = os.path.join(save_dir, 'epoch-{}.DNet'.format(epoch + 1))
-        torch.save(cur_model_wts, path_to_save_paramOnly)
+          cur_model_wts = copy.deepcopy(netD.state_dict())
+          path_to_save_paramOnly = os.path.join(save_dir, 'epoch-{}.DNet'.format(epoch + 1))
+          torch.save(cur_model_wts, path_to_save_paramOnly)
 
     return G_losses, D_losses
