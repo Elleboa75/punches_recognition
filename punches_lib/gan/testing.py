@@ -28,25 +28,35 @@ def plot_hist(
     outputs_crops:torch.Tensor,
     outputs_random:torch.Tensor,
     save_path:str,
-    title:str=""
+    title:str="",
+    extension:str="png",
+    threshold:float=None
 ):  
     if (folder:=os.path.dirname(save_path)) != "":
         os.makedirs(folder, exist_ok=True)
     # if outputs_train is not None:
     #     plt.hist(outputs_train.detach().cpu().numpy(), label="train data", density=True, alpha=0.5)
+    fig = plt.figure(figsize=(8,2.5))
     if outputs_ood is not None:
-        plt.hist(outputs_ood.detach().cpu().numpy(), label="OOD data", density=True, alpha=0.5)
+        plt.hist(outputs_ood.detach().cpu().numpy(), label="OOD training set", density=True, alpha=0.5, bins=75)
     if outputs_test is not None:
-        plt.hist(outputs_test.detach().cpu().numpy(), label="validation data", density=True, alpha=0.5)
+        plt.hist(outputs_test.detach().cpu().numpy(), label="Validation dataset", density=True, alpha=0.5, bins=75)
     if outputs_crops is not None:
         plt.hist(outputs_crops.detach().cpu().numpy(), label="random crops", density=True, alpha=0.5)
     if outputs_random is not None:
         plt.hist(outputs_random.detach().cpu().numpy(), label="random data", density=True, alpha=0.5)
-    plt.legend(loc='upper right')
+
+    if threshold is not None:
+        plt.axvline(x=threshold, color="red", linestyle="--")
+    plt.legend(loc='upper left')
+    plt.ylabel("Density")
+    plt.xlabel("OS")
     plt.title(title)
 
-    if os.path.splitext(save_path)[1] != ".png":
-        save_path += ".png"
+    plt.tight_layout()
+
+    if os.path.splitext(save_path)[1] != f".{extension}":
+        save_path += f".{extension}"
     plt.savefig(save_path)
 
 def get_performance(

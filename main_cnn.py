@@ -35,7 +35,7 @@ def main():
     print(f"Model saved to {args.model_path}")
 
     testloader = datasets.get_dataloader(args.root_test, args.batch_size, num_workers=8, transforms=datasets.get_bare_transforms(), shuffle=False)
-    eval.evaluate_model(net, testloader, loss_fn=loss_fn, device=None)
+    eval.test_model(net, testloader, loss_fn=loss_fn, device=None)
 
 if __name__ == "__main__":
     main()
