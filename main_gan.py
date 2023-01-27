@@ -156,7 +156,6 @@ def main():
     torch.save(test_features, "punzoni_res18_features_TEST.pt")
     featureloader_test = data.FeatDataset(data=test_features)
     features_testloader = DataLoader(featureloader_test, batch_size=args.batch_size_eval, shuffle=True, num_workers=1)
-    ## Anziché il backbone, andrebbe passato il feature_loader
     outputs_open, outputs_close = test.test_model(backbone, features_testloader, netD, device)
     plot.plot_roc_curve(outputs_open, outputs_close, args.modelFlag)
     plot.plot_hist(outputs_open, outputs_close, args.modelFlag)
