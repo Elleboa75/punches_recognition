@@ -47,8 +47,16 @@ def get_args():
     parser.add_argument("--lr", type=float, default=0.0001, help="learning rate (default: 0.0001).")
     parser.add_argument("--path_to_feats", type=str, default='./feats',
                         help="the path to cached off-the-shelf features")
-    parser.add_argument("--root_data", type=str, default='./PunchesDataset',
-                        help="the path to find the dir of data")
+    parser.add_argument("--root_train", type=str, default='./PunchesDataset',
+                        help="the path to find the dir of train data")
+    parser.add_argument("--root_test", type=str, default='./PunchesDataset',
+                        help="the path to find the dir of test data")
+    parser.add_argument("--root_nopunch", type=str, default='./PunchesDataset',
+                        help="the path to find the dir of no punch data")
+    parser.add_argument("--root_extra", type=str, default='./PunchesDataset',
+                        help="the path to find the dir of extra data")
+    parser.add_argument("--root_valid", type=str, default='./PunchesDataset',
+                        help="the path to find the dir of validation data")
     parser.add_argument("--name_modelpth", type=str, default='./modelRes18.pth',
                         help="pretrained model (default: ResNet18)")
     parser.add_argument("--model", type=str, default='resnet18',
@@ -111,10 +119,11 @@ def main():
 
     print(args.device)
 
-    trainloader = data.get_dataloader(os.path.join(args.root_data, "/Train"), args.batch_size, transforms=data.get_bare_transforms())
-    testloader = data.get_dataloader(os.path.join(args.root_data, "/Test"), args.batch_size_eval,transforms=data.get_bare_transforms())
-    nopunchloader = data.get_dataloader(os.path.join(args.root_data, "/Crops"), args.batch_size_eval, transforms=data.get_bare_transforms())
-    extraloader = data.get_dataloader(os.path.join(args.root_data, "/OOD_train"), args.batch_size_eval, transforms=data.get_bare_transforms())
+    trainloader = data.get_dataloader(os.path.join(args.root_train, "/Train"), args.batch_size, transforms=data.get_bare_transforms())
+    testloader = data.get_dataloader(os.path.join(args.root_test, "/Test"), args.batch_size_eval,transforms=data.get_bare_transforms())
+    nopunchloader = data.get_dataloader(os.path.join(args.root_nopunch, "/Crops"), args.batch_size_eval, transforms=data.get_bare_transforms())
+    extraloader = data.get_dataloader(os.path.join(args.root_extra, "/OOD_train"), args.batch_size_eval, transforms=data.get_bare_transforms())
+    validloader = data.get_dataloader(os.path.join(args.root_valid, "/Valid"), args.batch_size_eval, transforms=data.get_bare_transforms())
 
 
     # Initialize BCELoss function
