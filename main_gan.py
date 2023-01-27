@@ -21,8 +21,6 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import torch.nn as nn
 
-#from punches_lib.gan.utils import dataset_tinyimagenet, plot, eval_funcs
-
 import warnings  # ignore warnings
 
 warnings.filterwarnings("ignore")
