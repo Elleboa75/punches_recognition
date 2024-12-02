@@ -43,7 +43,7 @@ def main():
         if args.use_pretrained and args.pretrained_params_path is not None:
             pretrained = False
             pretrained_params = torch.load(args.pretrained_params_path, map_location="cpu")
-        elif args.use_prerained:
+        elif args.use_pretrained:
             raise NotImplementedError("Loading pretrained params from torchvision is not implemented yet.")
         
         if pretrained_params is not None:
