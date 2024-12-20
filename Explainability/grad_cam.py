@@ -13,7 +13,7 @@ from pytorch_grad_cam import XGradCAM, GradCAM
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
 
-class GradCAM:
+class GradCAMManual:
     def __init__(self, model_path, model_class="resnet18", device=None):
         """
         Initialization of the GradCAM class.
@@ -76,7 +76,7 @@ class GradCAM:
         # Capture gradients
         self.gradients = grad_output[0]
 
-    def generate_cam(self, input_tensor, target_class):
+    def generate_cam(self, input_tensor, target_class, input_image):
         """
         Generate the Grad-CAM heatmap.
         Args:
@@ -85,54 +85,7 @@ class GradCAM:
         Returns:
             np.ndarray: Heatmap for the target class.
         """
-        output = self.forward_pass(input_tensor)
-
-        # Assuming output[0] contains the actual logits
-        logits = output[0]
-
-        # Zero gradients for the model
-        self.model.zero_grad()
-        target = logits[:, target_class]
-        target.backward(retain_graph=True)
-
-        # Compute the Grad-CAM
-        weights = torch.mean(self.gradients, dim=(2, 3), keepdim=True)  # Average over the height and width
-
-        # Ensure proper multiplication: match the number of channels
-        weights = weights.expand_as(self.activations)  # Expanding weights to match activations
-
-        # Now compute the weighted sum
-        cam = torch.sum(weights * self.activations, dim=1, keepdim=True).squeeze()
-
-        # Apply ReLU
-        cam = F.relu(cam)
-
-        # Convert to numpy
-        cam = cam.cpu().detach().numpy()
-
-        # Normalize to [0, 1]
-        cam = (cam - np.min(cam)) / (np.max(cam) - np.min(cam) + 1e-8)
-        return cam
-
-    def visualize_cam(self, input_image, heatmap, save_path=None):
-        """
-        Visualize the Grad-CAM heatmap overlaid on the input image.
-        Args:
-            input_image (np.ndarray): Original image.
-            heatmap (np.ndarray): Grad-CAM heatmap.
-            save_path (str): Path to save the visualization (optional).
-        """
-        heatmap_resized = cv2.resize(heatmap, (input_image.shape[1], input_image.shape[0]))
-        heatmap_color = cv2.applyColorMap(np.uint8(255 * heatmap_resized), cv2.COLORMAP_JET)
-        overlay = cv2.addWeighted(input_image, 0.6, heatmap_color, 0.4, 0)
-
-        plt.imshow(overlay)
-        plt.axis('off')
-        if save_path:
-            plt.savefig(save_path, bbox_inches='tight', pad_inches=0)
-        plt.show()
-
-
+        pass
 def process_test_folder(test_folder, output_base_folder, gradcam, transform, device):
     """
     Process all images in the test folder and generate Grad-CAM visualizations.
@@ -165,14 +118,45 @@ def process_test_folder(test_folder, output_base_folder, gradcam, transform, dev
             target_class = torch.argmax(logits, dim=1).item()
 
             # Grad-CAM
-            heatmap = gradcam.generate_cam(input_tensor, target_class)
-            relative_subdir = os.path.relpath(subdir, test_folder)  # Keeps relative subfolder structure
-            output_subfolder = os.path.join(gradcam_output_folder, relative_subdir)
-            os.makedirs(output_subfolder, exist_ok=True)
-            gradcam_path = os.path.join(output_subfolder, f"gradcam_{file}")
-            gradcam.visualize_cam(np.array(input_image), heatmap, save_path=gradcam_path)
+            gradcam = GradCAM(model = model, target_layers = [model.layer4[1]])  # Use appropriate layer
+
+            # Pass the image through the model
+            output = model(input_tensor)
+
+            # Get logits and find the target class
+            logits = output[0]
+            target_class = torch.argmax(logits, dim = 1).item()
+
+            # Wrap the target class index in a ClassifierOutputTarget
+            targets = [ClassifierOutputTarget(target_class)]  # Correct way to specify the target
+
+            # Grad-CAM
+            grayscale_cam = gradcam(input_tensor = input_tensor, targets = targets)
+
+            # Since grayscale_cam is a batch, we get the first item
+            grayscale_cam = grayscale_cam[0, :]
+            # Normalize the image to the range [0, 1] and convert to np.float32
+            input_image = np.array(input_image) / 255.0  # Normalize to [0, 1]
+            input_image = input_image.astype(np.float32)  # Ensure it's of type np.float32
+
+            # Resize the heatmap to match the input image size
+            grayscale_cam_resized = cv2.resize(grayscale_cam, (input_image.shape[1], input_image.shape[0]))
+
+            # Visualize and save XGrad-CAM output
+            relative_subdir = os.path.relpath(subdir, test_folder)
+            output_subfolder_grad = os.path.join(gradcam_output_folder, relative_subdir)
+            os.makedirs(output_subfolder_grad, exist_ok = True)
+            gradcam_path = os.path.join(output_subfolder_grad, f"gradcam_{file}")
+
+            # Use matplotlib to save the image
+            plt.imshow(show_cam_on_image(input_image, grayscale_cam_resized, use_rgb = True))
+            plt.axis('off')
+            plt.savefig(gradcam_path, bbox_inches = 'tight', pad_inches = 0)
+            plt.close()
 
             print(f"Saved Grad-CAM visualization for {image_path} to {gradcam_path}")  # Debug print
+
+
 def process_test_folder_xgrad(test_folder, output_base_folder, model, transform, device):
     """
     Process all images in the test folder and generate XGrad-CAM visualizations.
@@ -217,8 +201,8 @@ def process_test_folder_xgrad(test_folder, output_base_folder, model, transform,
             grayscale_cam = grayscale_cam[0, :]
 
             # Normalize the image to the range [0, 1] and convert to np.float32
-            input_image = np.array(input_image) / 255.0  # Normalize to [0, 1]
-            input_image = input_image.astype(np.float32)  # Ensure it's of type np.float32
+            input_image = np.array(input_image) / 255.0
+            input_image = input_image.astype(np.float32)
 
             # Resize the heatmap to match the input image size
             grayscale_cam_resized = cv2.resize(grayscale_cam, (input_image.shape[1], input_image.shape[0]))
@@ -242,7 +226,7 @@ if __name__ == "__main__":
     model_class = "resnet18"
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    gradcam = GradCAM(model_path=model_path, model_class=model_class, device=device)
+    gradcam = GradCAMManual(model_path=model_path, model_class=model_class, device=device)
     # Load your model for XGrad-CAM
 
     state_dict = torch.load(model_path, map_location = device)
@@ -275,5 +259,5 @@ if __name__ == "__main__":
     output_base_folder = "."
 
     # Process images for Grad-CAM
-    #process_test_folder(test_folder, output_base_folder, gradcam, transform, device)
+    process_test_folder(test_folder, output_base_folder, gradcam, transform, device)
     process_test_folder_xgrad(test_folder, output_base_folder, model, transform, device)

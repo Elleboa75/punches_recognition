@@ -4,6 +4,7 @@ import argparse
 from torchvision import models, transforms
 from PIL import Image
 from faithfulness import FaithfulnessValidator  # Assuming this is the path to your class
+import torch.nn as nn
 
 
 def load_model(model_path, device):
@@ -15,10 +16,17 @@ def load_model(model_path, device):
     Returns:
         torch.nn.Module: Loaded PyTorch model.
     """
-    model = models.resnet50(pretrained = False)  # Adjust to the model type you're using
-    model.load_state_dict(torch.load(model_path, map_location = device))
+    # Load ResNet18 with pretrained weights (optionally)
+    model = models.resnet18(weights=None)  # Set weights to None or pass your preference
+
+    # Modify the `fc` layer to match the number of classes in the checkpoint
+    num_classes = 19  # Adjust this to match your specific use case
+    model.fc = nn.Linear(model.fc.in_features, num_classes)
+
+    # Load the checkpoint
+    model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
-    model.eval()  # Set model to evaluation mode
+
     return model
 
 
@@ -34,7 +42,7 @@ def preprocess_image(image_path):
         transforms.Resize(224),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
-        transforms.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225]),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
     image = Image.open(image_path).convert("RGB")
     image_tensor = transform(image).unsqueeze(0)  # Add batch dimension
@@ -70,10 +78,11 @@ def main(model_path, heatmaps_folder, images_folder, device):
             # Get the target class by running the image through the model
             with torch.no_grad():
                 output = model(input_tensor)
-                target_class = torch.argmax(output, dim = 1).item()
+                target_class = torch.argmax(output, dim=1).item()
 
-            # Load the corresponding heatmap (adjust for your heatmap file naming convention)
-            heatmap_path = os.path.join(heatmaps_folder, f"gradcam_{image_name.split('.')[0]}.npy")
+            # Modify the heatmap path to account for the 'xgradcam_' prefix and '.tif' extension
+            heatmap_filename = f"xgradcam_{image_name.split('.')[0]}.tif"  # Add 'xgradcam_' prefix and change to .tif
+            heatmap_path = os.path.join(heatmaps_folder, heatmap_filename)
 
             if os.path.exists(heatmap_path):
                 # Validate the heatmap
@@ -87,11 +96,11 @@ def main(model_path, heatmaps_folder, images_folder, device):
 
 if __name__ == "__main__":
     # Parse arguments
-    parser = argparse.ArgumentParser(description = "Validate Grad-CAM heatmaps")
-    parser.add_argument("--model-path", type = str, required = True, help = "Path to the trained model file")
-    parser.add_argument("--heatmaps-folder", type = str, required = True, help = "Folder with the saved heatmaps")
-    parser.add_argument("--images-folder", type = str, required = True, help = "Folder with the images")
-    parser.add_argument("--device", type = str, default = "cpu", choices = ["cpu", "cuda"], help = "Device to run the model on")
+    parser = argparse.ArgumentParser(description="Validate Grad-CAM heatmaps")
+    parser.add_argument("--model-path", type=str, default="../cnn_model/model.pth", required=False, help="Path to the trained model file")
+    parser.add_argument("--heatmaps-folder", type=str, default="../Explainability/xgrad_cam/43", required=False, help="Folder with the saved heatmaps")
+    parser.add_argument("--images-folder", type=str, default="../data/Test/43", required=False, help="Folder with the images")
+    parser.add_argument("--device", type=str, default="cpu", choices=["cpu", "cuda"], help="Device to run the model on")
 
     args = parser.parse_args()
 
