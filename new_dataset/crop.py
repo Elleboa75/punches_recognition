@@ -1,3 +1,4 @@
+import argparse
 from psd_tools import PSDImage
 from PIL import Image
 import os
@@ -10,7 +11,8 @@ def parse_labels(file_path):
     file_path: Path to the labels.txt file
 
     Returns
-    crops: a list of coordinates and the class of the crop
+    -------
+    crops: a list of tuples (cls, x, y, dx, dy)
     """
     crops = []
     with open(file_path, 'r') as file:
@@ -25,14 +27,23 @@ def parse_labels(file_path):
                     dy = float(parts[4])
                     crops.append((cls, x, y, dx, dy))
                 except ValueError:
-                    print(f"Skipping invalid line: {line}")
+                    print(f"Skipping invalid line: {line.strip()}")
     return crops
 
 
 def split_image_psb(image_path, labels_path, output_dir):
+    """
+    Splits a PSB image into crops based on normalized coordinates in labels_path.
+
+    Parameters
+    ----------
+    image_path: Path to the PSB image file
+    labels_path: Path to the labels.txt file with lines: cls x y dx dy (normalized)
+    output_dir: Directory where crops will be saved
+    """
     # Load the PSB file
     psd = PSDImage.open(image_path)
-    image = psd.composite()  # Flatten into a PIL Image object
+    image = psd.composite()
     width, height = image.size
 
     # Parse the labels
@@ -55,6 +66,10 @@ def split_image_psb(image_path, labels_path, output_dir):
         right = min(width, right)
         bottom = min(height, bottom)
 
+        if left >= right or top >= bottom:
+            print(f"Skipping invalid crop coordinates for index {idx}: ({left}, {top}, {right}, {bottom})")
+            continue
+
         # Crop the image
         crop = image.crop((left, top, right, bottom))
 
@@ -64,10 +79,38 @@ def split_image_psb(image_path, labels_path, output_dir):
         print(f"Saved: {output_path}")
 
 
-if __name__ == "__main__":
-    # Example usage
-    image_path = "PSB images/07_Traino_S_Domenico_2.psb"
-    labels_path = "Labels/07_Traino_S_Domenico_2.txt"
-    output_dir = "Test"
+def get_args():
+    parser = argparse.ArgumentParser(description="Split PSB image into crops based on normalized labels.")
+    parser.add_argument(
+        '--image_path', type=str, required=True,
+        help='Path to the PSB image file.'
+    )
+    parser.add_argument(
+        '--labels_path', type=str, required=True,
+        help='Path to the labels.txt file with normalized coords.'
+    )
+    parser.add_argument(
+        '--output_dir', type=str, required=True,
+        help='Directory to save cropped images.'
+    )
+    return parser.parse_args()
+
+
+def main():
+    args = get_args()
+    image_path = args.image_path
+    labels_path = args.labels_path
+    output_dir = args.output_dir
+
+    if not os.path.isfile(image_path):
+        print(f"Error: image file not found: {image_path}")
+        return
+    if not os.path.isfile(labels_path):
+        print(f"Error: labels file not found: {labels_path}")
+        return
 
     split_image_psb(image_path, labels_path, output_dir)
+
+
+if __name__ == '__main__':
+    main()
